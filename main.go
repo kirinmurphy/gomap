@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,11 +16,19 @@ import (
 
 var locations = []locationHelpers.Location{}
 
+func init() {
+	godotenv.Load()
+	if err := loadLocations(); err != nil {
+		log.Fatalf("failed to load initial locations: %v", err)
+	}
+}
+
 func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", homeHandler)
 	r.HandleFunc("/locations", locationsHandler)
+	r.HandleFunc("/reload-locations", reloadLocationsHandler).Methods("POST")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	log.Println("Server starting on port 8080")
@@ -36,20 +45,28 @@ func locationsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(locations)
 }
 
-func init() {
-	godotenv.Load()
+func reloadLocationsHandler(w http.ResponseWriter, r *http.Request) {
+	if err := loadLocations(); err != nil {
+		log.Printf("Failed to reload locations: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func loadLocations() error {
 	spreadsheetUrl := os.Getenv("GOOGLE_SHEET_CSV_URL")
 
 	csvStream, errChan := locationHelpers.FetchLocationData(spreadsheetUrl)
 
 	parsedLocations, err := locationHelpers.ParseLocations(csvStream)
 	if err != nil {
-		log.Fatalf("Failed to parse locations: %v", err)
+		return fmt.Errorf("failed to parse locations: %w", err)
 	}
 
 	if err := <-errChan; err != nil {
-		log.Fatalf("Failed to fetch CSV data: %v", err)
+		return fmt.Errorf("failed to fetch CSV data: %w", err)
 	}
 
 	locations = parsedLocations
+	return nil
 }
