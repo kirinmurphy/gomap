@@ -1,4 +1,4 @@
-package main
+package locationHelpers
 
 import (
 	"encoding/csv"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
+func FetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 	csvStream := make(chan []string)
 	errChan := make(chan error, 1)
 

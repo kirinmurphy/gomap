@@ -7,22 +7,13 @@ import (
 	"os"
 	"text/template"
 
+	"gopro/locationHelpers"
+
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
-type Location struct {
-	Name       string  `json:"name"`
-	Address    string  `json:"address"`
-	City       string  `json:"city"`
-	State      string  `json:"state"`
-	Country    string  `json:"country"`
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	IsCo404Loc bool    `json:"isCo404Loc"`
-}
-
-var locations = []Location{}
+var locations = []locationHelpers.Location{}
 
 func main() {
 	r := mux.NewRouter()
@@ -49,9 +40,9 @@ func init() {
 	godotenv.Load()
 	spreadsheetUrl := os.Getenv("GOOGLE_SHEET_CSV_URL")
 
-	csvStream, errChan := fetchLocationData(spreadsheetUrl)
+	csvStream, errChan := locationHelpers.FetchLocationData(spreadsheetUrl)
 
-	parsedLocations, err := parseLocations(csvStream)
+	parsedLocations, err := locationHelpers.ParseLocations(csvStream)
 	if err != nil {
 		log.Fatalf("Failed to parse locations: %v", err)
 	}

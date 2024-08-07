@@ -1,11 +1,22 @@
-package main
+package locationHelpers
 
 import (
 	"strconv"
 	"strings"
 )
 
-func parseLocations(csvStream <-chan []string) ([]Location, error) {
+type Location struct {
+	Name       string  `json:"name"`
+	Address    string  `json:"address"`
+	City       string  `json:"city"`
+	State      string  `json:"state"`
+	Country    string  `json:"country"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
+	IsCo404Loc bool    `json:"isCo404Loc"`
+}
+
+func ParseLocations(csvStream <-chan []string) ([]Location, error) {
 	var locs []Location
 
 	headerMap := make(map[string]int)
