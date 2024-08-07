@@ -47,10 +47,18 @@ func locationsHandler(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	godotenv.Load()
-	url := os.Getenv("GOOGLE_SHEET_CSV_URL")
+	spreadsheetUrl := os.Getenv("GOOGLE_SHEET_CSV_URL")
 
-	err := fetchLocationsFromGoogleSheets(url)
+	csvStream, errChan := fetchLocationData(spreadsheetUrl)
+
+	parsedLocations, err := parseLocations(csvStream)
 	if err != nil {
-		log.Fatalf("Failed to fetch initial locations: %v", err)
+		log.Fatalf("Failed to parse locations: %v", err)
 	}
+
+	if err := <-errChan; err != nil {
+		log.Fatalf("Failed to fetch CSV data: %v", err)
+	}
+
+	locations = parsedLocations
 }

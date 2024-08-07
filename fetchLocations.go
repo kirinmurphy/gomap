@@ -4,61 +4,45 @@ import (
 	"encoding/csv"
 	"io"
 	"net/http"
-	"strconv"
-	"strings"
 )
 
-func fetchLocationsFromGoogleSheets(url string) error {
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
+	csvStream := make(chan []string)
+	errChan := make(chan error, 1)
 
-	var locs []Location
-
-	reader := csv.NewReader(resp.Body)
-
-	headers, err := reader.Read()
-	if err != nil {
-		return err
-	}
-
-	headerMap := make(map[string]int)
-	for i, header := range headers {
-		headerMap[header] = i
-	}
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
+	go func() {
+		resp, err := http.Get(spreadsheetUrl)
 
 		if err != nil {
-			return err
+			errChan <- err
+			close(csvStream)
+			close(errChan)
 		}
 
-		lat, _ := strconv.ParseFloat(record[headerMap["Latitude"]], 64)
-		long, _ := strconv.ParseFloat(record[headerMap["Longitude"]], 64)
-		name := record[headerMap["Name"]]
+		defer resp.Body.Close()
 
-		locs = append(locs, Location{
-			Name:       name,
-			Address:    record[headerMap["Address"]],
-			City:       record[headerMap["City"]],
-			State:      record[headerMap["State"]],
-			Country:    record[headerMap["Country"]],
-			Latitude:   lat,
-			Longitude:  long,
-			IsCo404Loc: containsCo404(name),
-		})
-	}
-	locations = locs
-	return nil
-}
+		reader := csv.NewReader(resp.Body)
 
-func containsCo404(s string) bool {
-	lowerStr := strings.ToLower(s)
-	return strings.Contains(lowerStr, "co404")
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+
+			if err != nil {
+				errChan <- err
+				close(csvStream)
+				close(errChan)
+				return
+			}
+
+			csvStream <- record
+		}
+
+		close(csvStream)
+		errChan <- nil
+		close(errChan)
+	}()
+
+	return csvStream, errChan
 }
