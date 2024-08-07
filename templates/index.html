@@ -40,7 +40,6 @@
       const locations = JSON.parse(evt.detail.xhr.response);
       locations.forEach(function(loc) {
         const markerOptions = loc.isCo404Loc ? { icon: redIcon } : {};  
-        console.log('markerOptions ==========', markerOptions); 
         L.marker([loc.latitude, loc.longitude], markerOptions).addTo(map)
           .bindPopup(loc.name);
       });
