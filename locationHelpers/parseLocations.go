@@ -16,7 +16,7 @@ type Location struct {
 	IsCo404Loc bool    `json:"isCo404Loc"`
 }
 
-func ParseLocations(csvStream <-chan []string) ([]Location, error) {
+func parseLocations(csvStream <-chan []string) ([]Location, error) {
 	var locs []Location
 
 	headerMap := make(map[string]int)

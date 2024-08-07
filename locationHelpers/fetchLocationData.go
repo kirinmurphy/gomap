@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func FetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
+func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 	csvStream := make(chan []string)
 	errChan := make(chan error, 1)
 
