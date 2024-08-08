@@ -1,0 +1,9 @@
+services: 
+  - type: web
+    name: gomap
+    env: docker
+    buildCommand: docker build -t gomap
+    startCommand: docker run --rm -p 8080:8080 gomap
+    envVars:
+      - key: PORT
+      - value: 8080

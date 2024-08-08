@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"gopro/locationHelpers"
+	"gomap/locationHelpers"
 
 	"github.com/joho/godotenv"
 )

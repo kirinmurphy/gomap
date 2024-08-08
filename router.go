@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"gopro/locationHelpers"
+	"gomap/locationHelpers"
 	"log"
 	"net/http"
 	"text/template"
@@ -21,11 +21,11 @@ func initRouter(locations []locationHelpers.Location) {
 
 	r.HandleFunc("/reload-locations", func(w http.ResponseWriter, r *http.Request) {
 		locations = reloadLocationsHandler(w, r)
-	}).Methods("POST")
+	}).Methods("GET")
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	log.Println("Sherver starting on port 8080")
+	log.Println("Server starting on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
@@ -46,5 +46,7 @@ func reloadLocationsHandler(w http.ResponseWriter, r *http.Request) []locationHe
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
+
+	locationsHandler(w, r, reloadedLocations)
 	return reloadedLocations
 }
