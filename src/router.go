@@ -13,6 +13,10 @@ import (
 func initRouter(locationStore *LocationStore, setLocations func([]locationHelpers.Location)) {
 	r := mux.NewRouter()
 
+	fs := http.FileServer(http.Dir("src/templates/dist"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	http.Handle("/output.css", http.StripPrefix("/", fs))
+
 	r.HandleFunc("/", homeHandler)
 
 	r.HandleFunc("/locations", func(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +34,7 @@ func initRouter(locationStore *LocationStore, setLocations func([]locationHelper
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("src/templates/index.html"))
+	tmpl := template.Must(template.ParseFiles("src/templates/dist/index.html"))
 	tmpl.Execute(w, nil)
 }
 
