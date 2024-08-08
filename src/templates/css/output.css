@@ -550,3 +550,7 @@ video {
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
+
+.red-marker {
+  filter: hue-rotate(0deg) saturate(100%) brightness(100%) invert(21%) sepia(100%) saturate(2202%) hue-rotate(340deg) brightness(90%) contrast(101%);
+}    
