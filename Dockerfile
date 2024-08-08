@@ -1,4 +1,4 @@
-## -- GO INIT ------- 
+## -- GO BUILD ------- 
 
   FROM golang:1.21 as builder
 
@@ -13,7 +13,7 @@
   
   RUN go build -o /app/main .
   
-  ## -- YARN INIT ------- 
+  ## -- YARN BUILD ------- 
   FROM node:18 as frontend-builder
   
   WORKDIR /app
@@ -27,6 +27,7 @@
   
   RUN npm run build
   
+  ## -- ASSEMBLE --------
   FROM golang:1.21
   
   WORKDIR /app

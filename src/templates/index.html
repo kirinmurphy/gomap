@@ -17,35 +17,9 @@
 </head>
 <body>
   <div id="map" class="fixed top-0 left-0 right-0 bottom-0"></div>
-
   <div class="fixed bg-red-800 bottom-4 left-4 z-30 text-white w-1/2 p-4">Heyyy</div>
 
-  <script>
-    const map = L.map('map').setView([0, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    const redIcon = new L.Icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
-      className: 'red-marker' // Add a custom class to apply CSS
-    });
-    
-    htmx.on('htmx:afterSettle', function(evt) {
-      const locations = JSON.parse(evt.detail.xhr.response);
-      locations.forEach(function(loc) {
-        const markerOptions = loc.isCo404Loc ? { icon: redIcon } : {};  
-        L.marker([loc.latitude, loc.longitude], markerOptions).addTo(map)
-          .bindPopup(loc.name);
-      });
-    });
-  </script>
-
   <div hx-get="/locations" hx-trigger="load" hx-swap="none"></div>
+  <script src="/src/templates/js/mapInit.js"></script>
 </body>
 </html>

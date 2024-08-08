@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  gomap:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+      - ./templates:/app/templates
