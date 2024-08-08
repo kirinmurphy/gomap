@@ -8,16 +8,17 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <link href="/templates/css/output.css" rel="stylesheet">
   <style>
-    #map { position: fixed; top: 0; bottom: 0; left: 0; right: 0; }
-
     .red-marker {
       filter: hue-rotate(0deg) saturate(100%) brightness(100%) invert(21%) sepia(100%) saturate(2202%) hue-rotate(340deg) brightness(90%) contrast(101%);
     }        
   </style>
 </head>
 <body>
-  <div id="map"></div>
+  <div id="map" class="fixed top-0 left-0 right-0 bottom-0"></div>
+
+  <div class="fixed bg-black bottom-4 left-4 z-30 text-white w-1/2 p-4">Heyyy</div>
 
   <script>
     const map = L.map('map').setView([0, 0], 2);

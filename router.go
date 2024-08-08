@@ -23,7 +23,7 @@ func initRouter(locationStore *LocationStore, setLocations func([]locationHelper
 		reloadLocationsHandler(w, r, setLocations, locationStore)
 	}).Methods("GET")
 
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	r.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
 
 	log.Println("Server starting on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
