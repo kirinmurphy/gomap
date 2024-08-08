@@ -10,17 +10,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func initRouter(locations []locationHelpers.Location) {
+func initRouter(locationStore *LocationStore, setLocations func([]locationHelpers.Location)) {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", homeHandler)
 
 	r.HandleFunc("/locations", func(w http.ResponseWriter, r *http.Request) {
-		locationsHandler(w, r, locations)
+		locationsHandler(w, r, locationStore)
 	})
 
 	r.HandleFunc("/reload-locations", func(w http.ResponseWriter, r *http.Request) {
-		locations = reloadLocationsHandler(w, r)
+		reloadLocationsHandler(w, r, setLocations)
 	}).Methods("GET")
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -34,19 +34,20 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-func locationsHandler(w http.ResponseWriter, r *http.Request, locations []locationHelpers.Location) {
+func locationsHandler(w http.ResponseWriter, r *http.Request, locationStore *LocationStore) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(locations)
+	json.NewEncoder(w).Encode(locationStore.GetLocations())
 }
 
-func reloadLocationsHandler(w http.ResponseWriter, r *http.Request) []locationHelpers.Location {
+func reloadLocationsHandler(w http.ResponseWriter, r *http.Request, setLocations func([]locationHelpers.Location)) {
 	reloadedLocations, err := locationHelpers.LoadLocations()
 	if err != nil {
 		log.Printf("Failed to reload locations: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
 	}
 
-	locationsHandler(w, r, reloadedLocations)
-	return reloadedLocations
+	setLocations(reloadedLocations)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(reloadedLocations)
 }
