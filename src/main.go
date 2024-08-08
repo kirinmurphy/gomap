@@ -1,10 +1,9 @@
 package main
 
 import (
+	"gomap/src/locationHelpers"
 	"log"
 	"sync"
-
-	"gomap/locationHelpers"
 
 	"github.com/joho/godotenv"
 )

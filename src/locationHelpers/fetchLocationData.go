@@ -3,6 +3,7 @@ package locationHelpers
 import (
 	"encoding/csv"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -12,14 +13,23 @@ func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 
 	go func() {
 		resp, err := http.Get(spreadsheetUrl)
-
 		if err != nil {
+			log.Println("Error fetching URL:", err)
 			errChan <- err
 			close(csvStream)
 			close(errChan)
+			return
 		}
 
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			log.Println("Unexpected status code:", resp.StatusCode)
+			errChan <- err
+			close(csvStream)
+			close(errChan)
+			return
+		}
 
 		reader := csv.NewReader(resp.Body)
 
@@ -28,8 +38,8 @@ func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 			if err == io.EOF {
 				break
 			}
-
 			if err != nil {
+				log.Println("Error reading CSV:", err)
 				errChan <- err
 				close(csvStream)
 				close(errChan)

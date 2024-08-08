@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"gomap/locationHelpers"
+	"gomap/src/locationHelpers"
 	"log"
 	"net/http"
 	"text/template"
@@ -23,14 +23,14 @@ func initRouter(locationStore *LocationStore, setLocations func([]locationHelper
 		reloadLocationsHandler(w, r, setLocations, locationStore)
 	}).Methods("GET")
 
-	r.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
+	r.PathPrefix("/src/templates/").Handler(http.StripPrefix("/src/templates/", http.FileServer(http.Dir("src/templates"))))
 
 	log.Println("Server starting on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("templates/index.html"))
+	tmpl := template.Must(template.ParseFiles("src/templates/index.html"))
 	tmpl.Execute(w, nil)
 }
 

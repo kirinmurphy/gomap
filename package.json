@@ -1,9 +1,9 @@
 {
   "scripts": {
     "build": "yarn run build:css",
-    "build:css": "npx postcss styles/tailwind.css -o templates/css/output.css",
-    "watch:css": "npx postcss styles/tailwind.css -o templates/css/output.css --watch",
-    "start": "browser-sync start --proxy localhost:8080 --files 'templates/**/*.{html,js,css}' --no-open --no-notify",
+    "build:css": "npx postcss src/styles/tailwind.css -o src/templates/css/output.css",
+    "watch:css": "npx postcss src/styles/tailwind.css -o src/templates/css/output.css --watch",
+    "start": "browser-sync start --proxy localhost:8080 --files 'src/templates/**/*.{html,js,css}' --no-open --no-notify",
     "dev": "concurrently \"npm run watch:css\" \"npm run start\""
   },
   "devDependencies": {
