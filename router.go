@@ -20,7 +20,7 @@ func initRouter(locationStore *LocationStore, setLocations func([]locationHelper
 	})
 
 	r.HandleFunc("/reload-locations", func(w http.ResponseWriter, r *http.Request) {
-		reloadLocationsHandler(w, r, setLocations)
+		reloadLocationsHandler(w, r, setLocations, locationStore)
 	}).Methods("GET")
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -39,15 +39,20 @@ func locationsHandler(w http.ResponseWriter, r *http.Request, locationStore *Loc
 	json.NewEncoder(w).Encode(locationStore.GetLocations())
 }
 
-func reloadLocationsHandler(w http.ResponseWriter, r *http.Request, setLocations func([]locationHelpers.Location)) {
+func reloadLocationsHandler(w http.ResponseWriter, r *http.Request, setLocations func([]locationHelpers.Location), locationStore *LocationStore) {
 	reloadedLocations, err := locationHelpers.LoadLocations()
 	if err != nil {
 		log.Printf("Failed to reload locations: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
+	currentLocations := locationStore.GetLocations()
+	diff := locationHelpers.DiffLocations(currentLocations, reloadedLocations)
+
 	setLocations(reloadedLocations)
 
+	log.Printf("current locations: %d", len(currentLocations))
+	log.Printf("Reloaded %d locations", len(reloadedLocations))
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reloadedLocations)
+	json.NewEncoder(w).Encode(diff)
 }
