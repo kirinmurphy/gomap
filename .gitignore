@@ -1,4 +1,4 @@
 .env
 .DS_Store
 node_modules
-templates/css/output.css
+src/templates/dist/
