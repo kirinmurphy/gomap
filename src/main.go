@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"gomap/src/locationHelpers"
 	"log"
 	"os"
-	"sync"
+
+	"gomap/src/router"
 
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -31,37 +31,6 @@ func init() {
 	log.Println("Connected to redis")
 }
 
-type LocationStore struct {
-	locations []locationHelpers.Location
-	mu        sync.RWMutex
-}
-
-func (ls *LocationStore) GetLocations() []locationHelpers.Location {
-	ls.mu.RLock()
-	defer ls.mu.RUnlock()
-	return ls.locations
-}
-
-func (ls *LocationStore) SetLocations(newLocations []locationHelpers.Location) {
-	ls.mu.Lock()
-	defer ls.mu.Unlock()
-	ls.locations = newLocations
-}
-
 func main() {
-	// initialLocations, err := locationHelpers.LoadLocations()
-	// if err != nil {
-	// 	log.Fatalf("failed to load initial locations: %v", err)
-	// }
-
-	// locationStore := &LocationStore{
-	// 	locations: initialLocations,
-	// }
-
-	// setLocations := func(newLocations []locationHelpers.Location) {
-	// 	locationStore.SetLocations(newLocations)
-	// }
-
-	// locationStore := &LocationStore{}
-	initRouter()
+	router.InitRouter(redisClient, ctx)
 }
