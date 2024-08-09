@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"gomap/src/locationHelpers"
+	"gomap/src/locationManager"
 	"net/http"
 
 	"github.com/redis/go-redis/v9"
@@ -21,7 +21,7 @@ func loadLocationsRouteHandler(w http.ResponseWriter, r *http.Request, redisClie
 
 	spreadsheetUrl := fmt.Sprintf(baseSpreadsheetUrl, sheetId)
 
-	parsedLocations, err := locationHelpers.LoadLocations(spreadsheetUrl)
+	parsedLocations, err := locationManager.LoadLocations(spreadsheetUrl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

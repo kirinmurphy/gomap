@@ -17,7 +17,10 @@
 </head>
 <body>
   <div id="map" class="fixed top-0 left-0 right-0 bottom-0"></div>
-  <div class="fixed bg-red-800 bottom-4 left-4 z-30 text-white w-1/2 p-4">Heyyy</div>
+  <div class="fixed bg-[rgba(0,0,0,0.4)] right-1 bottom-1 z-30 text-white text-xs font-bold px-4 py-2">
+    Mapizer 
+    <span< class="text-orange-400 pl-1">BETA</span>
+  </div>
 
   <div hx-get="/locations?sheetId={{ .SheetId }}" hx-trigger="load" hx-swap="none"></div>
   <script src="/src/templates/js/mapInit.js"></script>

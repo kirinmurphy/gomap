@@ -1,4 +1,4 @@
-package locationHelpers
+package locationManager
 
 type LocationDiff struct {
 	Added   []Location `json:"added"`
