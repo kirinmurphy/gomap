@@ -2,12 +2,9 @@ package locationHelpers
 
 import (
 	"fmt"
-	"os"
 )
 
-func LoadLocations() ([]Location, error) {
-	spreadsheetUrl := os.Getenv("GOOGLE_SHEET_CSV_URL")
-
+func LoadLocations(spreadsheetUrl string) ([]Location, error) {
 	csvStream, errChan := fetchLocationData(spreadsheetUrl)
 
 	parsedLocations, err := parseLocations(csvStream)
