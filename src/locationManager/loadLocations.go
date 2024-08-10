@@ -1,4 +1,4 @@
-package locationHelpers
+package locationManager
 
 import (
 	"fmt"
