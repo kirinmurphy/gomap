@@ -1,7 +1,8 @@
 module.exports = {
   proxy: 'localhost:8080',
   files: [
-    'templates/**/*.{html,js,css}'
+    'src/templates/**/*.{html,js,css}',
+    '!src/templates/css/**/*' 
   ],
   open: false,
   notify: false,

@@ -9,4 +9,4 @@ services:
       - .env
     volumes:
       - ./src:/app/src
-      - ./templates:/app/templates
+      - ./templates:/app/src/templates
