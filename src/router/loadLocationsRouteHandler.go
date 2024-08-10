@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gomap/src/locationManager"
+	"log"
 	"net/http"
 
 	"github.com/redis/go-redis/v9"
@@ -13,7 +14,24 @@ import (
 const baseSpreadsheetUrl = "https://docs.google.com/spreadsheets/d/e/%s/pub?gid=0&single=true&output=csv"
 
 func loadLocationsRouteHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client, ctx context.Context) {
-	sheetId := r.URL.Query().Get("sheetId")
+	var sheetId string
+
+	switch r.Method {
+	case http.MethodGet:
+		sheetId = r.URL.Query().Get("sheetId")
+	case http.MethodPost:
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+			return
+		}
+		sheetId = r.FormValue("sheetId")
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("SheetId: %s", sheetId)
 	if sheetId == "" {
 		http.Error(w, "Missing sheetId parameter", http.StatusBadRequest)
 		return
@@ -27,9 +45,23 @@ func loadLocationsRouteHandler(w http.ResponseWriter, r *http.Request, redisClie
 		return
 	}
 
-	locationsJson, _ := json.Marshal(parsedLocations)
-	redisClient.Set(ctx, sheetId, locationsJson, 0)
+	locationsJson, err := json.Marshal(parsedLocations)
+	if err != nil {
+		http.Error(w, "Failed to marshal locations", http.StatusInternalServerError)
+		return
+	}
 
+	err = redisClient.Set(ctx, sheetId, locationsJson, 0).Err()
+	if err != nil {
+		http.Error(w, "Failed to cache locations", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Locations located and cached"))
+	json.NewEncoder(w).Encode(map[string]string{
+		"success": "true",
+		"message": "Locations loaded and cached",
+		"sheetId": sheetId,
+	})
 }

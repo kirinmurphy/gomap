@@ -18,7 +18,7 @@ func InitRouter(redisClient *redis.Client, ctx context.Context) {
 
 	r.HandleFunc("/loadLocations", func(w http.ResponseWriter, r *http.Request) {
 		loadLocationsRouteHandler(w, r, redisClient, ctx)
-	})
+	}).Methods("POST")
 
 	r.HandleFunc("/locations", func(w http.ResponseWriter, r *http.Request) {
 		getLocationsRouteHandler(w, r, redisClient)
