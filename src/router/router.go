@@ -18,9 +18,13 @@ func InitRouter(redisClient *redis.Client, ctx context.Context) {
 
 	r.HandleFunc("/loadLocations", func(w http.ResponseWriter, r *http.Request) {
 		loadLocationsRouteHandler(w, r, redisClient, ctx)
+	}).Methods("GET")
+
+	r.HandleFunc("/updateMapUI", func(w http.ResponseWriter, r *http.Request) {
+		updateMapUIHandler(w, r, redisClient, ctx)
 	}).Methods("POST")
 
-	r.HandleFunc("/locations", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/getLocations", func(w http.ResponseWriter, r *http.Request) {
 		getLocationsRouteHandler(w, r, redisClient)
 	})
 

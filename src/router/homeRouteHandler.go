@@ -8,11 +8,16 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+var (
+	homepageTemplate = template.Must(template.ParseFiles("src/templates/home.html"))
+	mapPageTemplate  = template.Must(template.ParseFiles("src/templates/map.html"))
+)
+
 func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client, ctx context.Context) {
+
 	sheetId := r.URL.Query().Get("sheetId")
 	if sheetId == "" {
-		tmpl := template.Must(template.ParseFiles("src/templates/home.html"))
-		tmpl.Execute(w, nil)
+		homepageTemplate.Execute(w, nil)
 		return
 	}
 
@@ -22,6 +27,5 @@ func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient *redis
 		return
 	}
 
-	tmpl := template.Must(template.ParseFiles("src/templates/map.html"))
-	tmpl.Execute(w, map[string]string{"SheetId": sheetId})
+	mapPageTemplate.Execute(w, map[string]string{"SheetId": sheetId})
 }
