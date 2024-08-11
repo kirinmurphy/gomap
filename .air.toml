@@ -1,0 +1,19 @@
+# .air.toml
+[build]
+# Command to build your Go application; adjust to include the /src directory
+cmd = "go build -o ./tmp/main ./src"
+
+# The output binary location
+bin = "./tmp/main"
+
+# Directories and files to watch for changes
+include_dir = ["src", "templates"]
+
+# File extensions to watch
+include_ext = ["go", "html", "css", "js"]
+
+# Exclude directories
+exclude_dir = ["tmp"]
+
+[log]
+level = "debug"

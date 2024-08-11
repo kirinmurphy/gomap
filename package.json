@@ -3,9 +3,8 @@
     "prebuild:css": "mkdir -p src/templates/dist",
     "build": "yarn run build:css",
     "build:css": "yarn run prebuild:css && npx postcss src/templates/css/tailwind.css -o src/templates/dist/output.css",
-    "watch:css": "yarn run prebuild:css && npx postcss src/templates/css/tailwind.css -o src/templates/dist/output.css --watch",
-    "start": "browser-sync start --proxy localhost:8080 --files 'src/templates/**/*.{html,js,css}' --no-open --no-notify",
-    "dev": "concurrently \"npm run watch:css\" \"npm run start\""
+    "watch:css": "npx postcss src/templates/css/tailwind.css -o src/templates/dist/output.css --watch",
+    "dev": "concurrently \"npm run watch:css\" \"air\""
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
