@@ -10,14 +10,14 @@
 
   <body class="text-lg bg-[#071e22] lg:text-xl text-white font-thin">
     <div class="max-w-[800px] mx-auto">
-      <div class="lg:h-[100vh] lg:flex lg:flex-col lg:gap-3 lg:justify-center lg:pb-8">
+      <div class="md:h-[100vh] md:flex md:flex-col md:gap-3 md:justify-center md:pb-28">
         <header class="text-center py-8 leading-8">
           <h1 class="inline-block mb-2">
             <span class="inline-block text-xl scale-x-[250%]">MAPPERBOI</span>
             <span< class="inline-block text-xs translate-x-[5rem] translate-y-[-6px] text-orange-400 font-semibold">BETA</span>
           </h1>
           <p class="text-md mb-4">No Code Online Map Generator</p>
-          <p class="text-sm">Sync your google spreadsheet to generate a embeddable map of your locations.</p>
+          <p class="text-sm">Sync your google spreadsheet to generate an embeddable map of your locations.</p>
         </header>
   
         <iframe class="mb-4"
@@ -31,22 +31,17 @@
       <div class="flex flex-col gap-4 leading-8">
         <section class="bg-[#1d5468] p-6 md:rounded-md ">
           <h2 class="text-2xl font-medium mb-2">Create your google spreadhseet</h2>
-          <ol class="list-decimal list-inside">
-            <li>
-              Clone 
-              <a 
-                href="https://docs.google.com/spreadsheets/d/1KX8kjoQ7RxFDh0T8roQ83JwIyd8w8etRIJfdJljCook/edit?pli=1&gid=0#gid=0" 
-                target="_blank" 
-                rel="noopener 
-                noreferrer" 
-                class="underline">
-                this spreadsheet</a>:
+            Clone 
+            <a 
+              href="https://docs.google.com/spreadsheets/d/1KX8kjoQ7RxFDh0T8roQ83JwIyd8w8etRIJfdJljCook/edit?pli=1&gid=0#gid=0" 
+              target="_blank" 
+              rel="noopener 
+              noreferrer" 
+              class="underline">
+              this spreadsheet</a>
 
-              <span class="font-bold">File &gt; Make A Copy</span></li>
-            </li> 
-            <li>Add your locations</li>
-            <li>Publish it: <span class="font-bold">File &gt; Share &gt; Publish To Web</span></li>
-          </ol>
+            <div class="font-normal">File &gt; Make A Copy</div>
+          </li>
         </section>
   
         <section class="bg-[#1d5468] p-6 md:rounded-md ">
@@ -56,13 +51,23 @@
           </p>
           <p class="text-xs">(guaranteed 83 1/2% accurate)</p></p>  
         </section>
+
+        <section class="bg-[#1d5468] p-6 md:rounded-md ">
+          <h2 class="text-2xl font-medium mb-2">Publish your spreadsheet</h2>
+          <ol class="list-decimal list-inside">
+            <li><span class="font-normal">File &gt; Share &gt; Publish To Web</span></li>
+            <li>Select <span class="font-normal">Publish</span></li>
+            <li>Grab the URL from the popup</li>
+          </ol>
+        </section>
   
         <section class="bg-[#1d5468] p-6 md:rounded-md">
           <h2 class="text-2xl font-medium mb-2">Sync your spreadsheet</h2>
           <form id="sheetForm">
-            <label for="sheetUrl" class="block mb-2">Paste the URL from the <span class="strong">Publish</span> popup </span>in your spreadsheet.</label>
+            <label for="sheetUrl" class="block mb-2">Paste your spreasdheet URL</label>
             <input type="text" id="sheetUrl" name="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/e/YOUR_ID/pubhtml" class="w-full p-2 mb-4 text-black" required />
             <div id="urlError" class="text-red-500 mb-4 hidden"></div>
+            <div id="loadingIndicator" class="hidden">Loading...</div> 
           </form>
         </section>
 
@@ -114,6 +119,12 @@
           });
           
         }, 0);
+      });
+
+      document.getElementById("sheetForm").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault(); 
+        }
       });
 
       document.body.addEventListener("htmx:afterSwap", (event) => {
