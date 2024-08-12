@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>MapperBoi - No Code Online Map Generator</title>
+    <title>MapperBoi - Online Map Generator</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="/src/templates/dist/output.css" rel="stylesheet">
   </head>
@@ -16,8 +16,8 @@
             <span class="inline-block text-xl scale-x-[250%]">MAPPERBOI</span>
             <span< class="inline-block text-xs translate-x-[5rem] translate-y-[-6px] text-orange-400 font-semibold">BETA</span>
           </h1>
-          <p class="text-md mb-4">No Code Online Map Generator</p>
-          <p class="text-sm">Sync your google spreadsheet to generate an embeddable map of your locations.</p>
+          <p class="text-md mb-4">Online Map Generator</p>
+          <p class="text-sm">Create an embeddable map for your site with a google spreadsheet.</p>
         </header>
   
         <iframe class="mb-4"
@@ -74,7 +74,7 @@
         <div id="mapContainer"></div>  
       </div>
 
-      <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-4 px-2 lg:py-8 ">
+      <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-[500px] px-2 lg:py-8 ">
         <!-- <a class="hover:text-white" href="https://codethings.net" target="_blank" rel="noopener noreferrer">codethings.net</a> -->
         <a class="flex items-center gap-2 group hover:text-white" href="mailto:codethingsdotnet@gmail.com" target="_blank" rel="noopener noreferrer">
           <span class="invisible group-hover:visible inline-block text-sm">codethingsdotnet@gmail.com</span>
@@ -112,10 +112,12 @@
             hideError();
           }
 
+          document.getElementById("loadingIndicator").classList.remove("hidden");
+
           htmx.ajax('POST', '/updateMapUI', { 
             values: { sheetId },
             target: '#mapContainer',
-            swap: 'innerHtml', 
+            swap: 'innerHtml'
           });
           
         }, 0);
@@ -129,11 +131,16 @@
 
       document.body.addEventListener("htmx:afterSwap", (event) => {
         setTimeout(() => {
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-          });
-        }, 200);
+          const mapContainer = document.getElementById("mapContainer");
+          document.getElementById("loadingIndicator").classList.add("hidden");
+          if (mapContainer) {
+            const topPosition = mapContainer.getBoundingClientRect().top + window.scrollY - 10;
+            window.scrollTo({
+              top: topPosition,
+              behavior: "smooth"
+            });
+          }
+        }, 100);
       });
     </script>
   </body>
