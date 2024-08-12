@@ -1,19 +1,22 @@
 package locationManager
 
 import (
+	"log"
 	"strconv"
 	"strings"
 )
 
 type Location struct {
-	Name       string  `json:"name"`
-	Address    string  `json:"address"`
-	City       string  `json:"city"`
-	State      string  `json:"state"`
-	Country    string  `json:"country"`
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	IsCo404Loc bool    `json:"isCo404Loc"`
+	Name        string  `json:"name"`
+	Address     string  `json:"address"`
+	City        string  `json:"city"`
+	State       string  `json:"state"`
+	Country     string  `json:"country"`
+	Website     string  `json:"website"`
+	PhoneNumber string  `json:"phoneNumber"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	IsCo404Loc  bool    `json:"isCo404Loc"`
 }
 
 func parseLocations(csvStream <-chan []string) ([]Location, error) {
@@ -29,6 +32,7 @@ func parseLocations(csvStream <-chan []string) ([]Location, error) {
 				headerMap[header] = i
 			}
 			isHeader = false
+			log.Println("headerMap: ", headerMap)
 			continue
 		}
 
@@ -56,15 +60,18 @@ func parseLocation(record []string, headerMap map[string]int) (Location, error) 
 
 	name := record[headerMap["Name"]]
 
+	log.Printf("record: %s", record)
 	parsedLoc := Location{
-		Name:       name,
-		Address:    record[headerMap["Address"]],
-		City:       record[headerMap["City"]],
-		State:      record[headerMap["State"]],
-		Country:    record[headerMap["Country"]],
-		Latitude:   lat,
-		Longitude:  long,
-		IsCo404Loc: containsCo404(name),
+		Name:        name,
+		Address:     record[headerMap["Address"]],
+		City:        record[headerMap["City"]],
+		State:       record[headerMap["State"]],
+		Country:     record[headerMap["Country"]],
+		Website:     record[headerMap["Website"]],
+		PhoneNumber: record[headerMap["Phone Number"]],
+		Latitude:    lat,
+		Longitude:   long,
+		IsCo404Loc:  containsCo404(name),
 	}
 
 	return parsedLoc, nil

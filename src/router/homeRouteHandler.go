@@ -17,7 +17,12 @@ func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient *redis
 
 	sheetId := r.URL.Query().Get("sheetId")
 	if sheetId == "" {
-		homepageTemplate.Execute(w, nil)
+		demoFlag := r.URL.Query().Get("demo")
+		data := map[string]interface{}{
+			"Demo": demoFlag == "true",
+		}
+
+		homepageTemplate.Execute(w, data)
 		return
 	}
 

@@ -18,11 +18,32 @@ const markers = L.markerClusterGroup();
 
 htmx.on('htmx:afterSettle', function(evt) {
   const locations = JSON.parse(evt.detail.xhr.response);
-  
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', locations);
+
   locations.forEach(function(loc) {
+    const { name, address, city, state, country, website, phoneNumber } = loc;
     const markerOptions = loc.isCo404Loc ? { icon: redIcon } : {};
     const args = [loc.latitude, loc.longitude];
-    const marker = L.marker(args, markerOptions).bindPopup(loc.name);
+
+    const formattedWebsite = website ? website.replace(/^(https?:\/\/|\/\/)/, '') : null;
+
+    const popupContent = `
+      <div class="popup-template">
+        <h3 class="text-lg font-bold">${name}</h3>
+        <div class="text-md">
+          <div>${address}</div>
+          <div>${city}${!!state ? ' ' : ''}${state}, ${country}</div>
+          <div class="${!website ? 'hidden' : ''}">
+            <a href="https://${formattedWebsite}" target="_blank" rel="noopener noreferrer">${website}</a>
+          </div>
+          <div class="${!phoneNumber ? 'hidden' : ''}">
+            <a href="tel:${phoneNumber}" target="_blank" rel="noopener noreferrer">${phoneNumber}</a>
+          </div>
+        </div>
+      </div>
+    `;
+  
+    const marker = L.marker(args, markerOptions).bindPopup(popupContent);
     markers.addLayer(marker);
   });
 

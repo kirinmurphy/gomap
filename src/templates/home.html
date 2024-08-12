@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>MapperBoi - Online Map Generator</title>
+    <title>MapperBoi - Website Map Generator</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="/src/templates/dist/output.css" rel="stylesheet">
   </head>
@@ -16,7 +16,7 @@
             <span class="inline-block text-xl scale-x-[250%]">MAPPERBOI</span>
             <span< class="inline-block text-xs translate-x-[5rem] translate-y-[-6px] text-orange-400 font-semibold">BETA</span>
           </h1>
-          <p class="text-md mb-4">Online Map Generator</p>
+          <p class="text-md mb-4">Website Map Generator</p>
           <p class="text-sm">Create an embeddable map for your site with a google spreadsheet.</p>
         </header>
   
@@ -66,15 +66,29 @@
           <form id="sheetForm">
             <label for="sheetUrl" class="block mb-2">Paste your spreasdheet URL</label>
             <input type="text" id="sheetUrl" name="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/e/YOUR_ID/pubhtml" class="w-full p-2 mb-4 text-black" required />
-            <div id="urlError" class="text-red-500 mb-4 hidden"></div>
+            <div id="urlError" class="text-red-200 mt-[-.5rem] mb-4 hidden"></div>
             <div id="loadingIndicator" class="hidden">Loading...</div> 
           </form>
+
+          {{ if .Demo }}
+            <div id="demoPrompt" class="my-2 px-6 py-4 bg-[#071e22]">
+              <h3 class="font-bold text-md">Thanks for checking out my demo!</h3>
+              Here's a sample Google Sheet URL to try out the mapper. <br/>
+              <button 
+                id="pasteDemoUrl" 
+                class="bg-[#1d5468] mt-2 mb-4 px-4 py-2 text-sm font-bold rounded-sm"
+                copy-target="https://docs.google.com/spreadsheets/d/e/2PACX-1vShEip38mVjSMbXceuDbwJA-hbN3gpfLEEgvHUKjSgsQFoW9HO_r3VMFac8fh8GbfkcK7e2g2oeOhwd/pubhtml">
+                Use demo spreadsheet
+              </button>
+              <div class="text-xs">remove the <strong>demo=true</strong> in the URL to share this without this section</div>
+            </div>
+          {{ end }}
         </section>
 
         <div id="mapContainer"></div>  
       </div>
 
-      <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-[500px] px-2 lg:py-8 ">
+      <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-4 px-2 lg:py-8">
         <!-- <a class="hover:text-white" href="https://codethings.net" target="_blank" rel="noopener noreferrer">codethings.net</a> -->
         <a class="flex items-center gap-2 group hover:text-white" href="mailto:codethingsdotnet@gmail.com" target="_blank" rel="noopener noreferrer">
           <span class="invisible group-hover:visible inline-block text-sm">codethingsdotnet@gmail.com</span>
@@ -83,6 +97,7 @@
       </footer>  
     </div>
 
+    <script src="/src/templates/js/bindCopyListener.js"></script>
     <script>
       const validateUrl = (url) => {
         const regex = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)\/pubhtml$/;
@@ -104,7 +119,7 @@
           const url = event.target.value;
           const sheetId = validateUrl(url);
           if (!sheetId) {
-            displayError("Hate to tell you, but I think you got a bad URL there bud");
+            displayError("I think you got a bad URL there bud.");
             console.log('SHEETID', sheetId);
 
             return;
@@ -142,6 +157,17 @@
           }
         }, 100);
       });
+    
+      const demoPrompt = document.getElementById("demoPrompt");
+      if (demoPrompt) {
+        const pasteDemoUrlButton = document.getElementById("pasteDemoUrl");
+        const sheetUrlInput = document.getElementById("sheetUrl");
+        pasteDemoUrlButton.addEventListener("click", () => {
+          const urlToPaste = pasteDemoUrlButton.getAttribute("copy-target");
+          sheetUrlInput.value = urlToPaste;
+          sheetUrlInput.dispatchEvent(new Event("paste"));
+        });
+      }
     </script>
   </body>
 </html>

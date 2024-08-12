@@ -7,7 +7,17 @@
   height="300"
   frameborder="0"
 &gt;&lt;/iframe&gt;</pre>
-  <p class="mb-4 text-xs"><a href="#" target="_blank" rel="noopener noreferrer" class="underline">Get help</a> positioning your iframe in your site</p>
+  <p class="mb-4 text-xs">
+    <a 
+      class="underline cursor-pointer"
+      hx-on="click: document.getElementById('getHelp').classList.remove('hidden')">
+      Get help</a>  
+    positioning your iframe in your site.
+  </p>
+  <div id="getHelp" class="hidden text-sm mb-6">
+    <div><strong>Wow</strong> you're actually using this thing? Cool!</div>
+    <div>I don't have this part set up quite yet but you can <a class="underline" href="mailto:codethingsdotnet@gmail.com">email me</a> for help.</div>
+  </div>
   <div id="mapPreview">
     <iframe src="/?sheetId={{.SheetId}}" width="100%" height="300" frameborder="0"></iframe>
   </div>
