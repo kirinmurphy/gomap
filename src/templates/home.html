@@ -87,7 +87,7 @@
           {{ if .Demo }}
             <div id="demoPrompt" class="mt-2 px-6 py-4 bg-[#071e22]">
               <h3 class="font-bold text-md">Your are using the demo version.</h3>
-              <div class="mb-2">Here's a sample Google Sheet URL to try out the mapper.</div>
+              <div class="mb-2 text-sm">Here's a sample Google Sheet URL to try out the mapper.</div>
               <div class="mb-3">
                 <button 
                   id="pasteDemoUrl" 
@@ -96,7 +96,7 @@
                   Use demo spreadsheet
                 </button>
               </div>
-              <div class="text-xs">remove the <strong>?demo=true</strong> in the URL to share this without this section</div>
+              <div class="text-xs"><a class="underline" href="/">View / Share</a> the non-demo version</div>
             </div>
           {{ end }}
         </section>
