@@ -6,6 +6,7 @@
     <title>MapperBoi - Website Map Generator</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link href="/src/templates/dist/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   </head>
 
   <body class="text-lg bg-[#071e22] lg:text-xl text-white font-thin">
@@ -47,12 +48,18 @@
         <section class="bg-[#1d5468] p-6 md:rounded-md ">
           <h2 class="text-2xl font-medium mb-2">Add your locations</h2>
           <p class="mb-2">Try the  
-            <a href="https://chatgpt.com/g/g-kJ2i1rFDl-location-grabber" target="_blank" rel="noopener noreferrer" class="underline">Location Grabber GPT</a> to get your location data.
+            <a
+              href="https://chatgpt.com/g/g-kJ2i1rFDl-location-grabber"
+              target="_blank"
+              rel="noopener noreferrer" 
+              class="underline">Location Grabber GPT</a>  
+            to get your location data.
           </p>
-          <p class="text-xs">(guaranteed 83 1/2% accurate)</p></p>  
+
+          <p class="text-xs">(guaranteed 83 1/2% accurate)</p>  
         </section>
 
-        <section class="bg-[#1d5468] p-6 md:rounded-md ">
+        <section class="bg-[#1d5468] p-6 md:rounded-md">
           <h2 class="text-2xl font-medium mb-2">Publish your spreadsheet</h2>
           <ol class="list-decimal list-inside">
             <li><span class="font-normal">File &gt; Share &gt; Publish To Web</span></li>
@@ -64,23 +71,32 @@
         <section class="bg-[#1d5468] p-6 md:rounded-md">
           <h2 class="text-2xl font-medium mb-2">Sync your spreadsheet</h2>
           <form id="sheetForm">
-            <label for="sheetUrl" class="block mb-2">Paste your spreasdheet URL</label>
-            <input type="text" id="sheetUrl" name="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/e/YOUR_ID/pubhtml" class="w-full p-2 mb-4 text-black" required />
+            <label for="sheetUrl" class="block mb-3">Paste your spreasdheet URL</label>
+            <input 
+              type="text" 
+              id="sheetUrl" 
+              name="sheetUrl" 
+              placeholder="https://docs.google.com/spreadsheets/d/e/YOUR_ID/pubhtml" 
+              class="w-full p-2 mb-4 text-black" 
+              required 
+            />
             <div id="urlError" class="text-red-200 mt-[-.5rem] mb-4 hidden"></div>
             <div id="loadingIndicator" class="hidden">Loading...</div> 
           </form>
 
           {{ if .Demo }}
-            <div id="demoPrompt" class="my-2 px-6 py-4 bg-[#071e22]">
-              <h3 class="font-bold text-md">Thanks for checking out my demo!</h3>
-              Here's a sample Google Sheet URL to try out the mapper. <br/>
-              <button 
-                id="pasteDemoUrl" 
-                class="bg-[#1d5468] mt-2 mb-4 px-4 py-2 text-sm font-bold rounded-sm"
-                copy-target="https://docs.google.com/spreadsheets/d/e/2PACX-1vShEip38mVjSMbXceuDbwJA-hbN3gpfLEEgvHUKjSgsQFoW9HO_r3VMFac8fh8GbfkcK7e2g2oeOhwd/pubhtml">
-                Use demo spreadsheet
-              </button>
-              <div class="text-xs">remove the <strong>demo=true</strong> in the URL to share this without this section</div>
+            <div id="demoPrompt" class="mt-2 px-6 py-4 bg-[#071e22]">
+              <h3 class="font-bold text-md">Your are using the demo version.</h3>
+              <div class="mb-2">Here's a sample Google Sheet URL to try out the mapper.</div>
+              <div class="mb-3">
+                <button 
+                  id="pasteDemoUrl" 
+                  class="bg-[#1d5468] px-4 py-2 text-sm font-bold rounded-md hover:bg-[#2d6478]"
+                  text-to-copy="https://docs.google.com/spreadsheets/d/e/2PACX-1vShEip38mVjSMbXceuDbwJA-hbN3gpfLEEgvHUKjSgsQFoW9HO_r3VMFac8fh8GbfkcK7e2g2oeOhwd/pubhtml">
+                  Use demo spreadsheet
+                </button>
+              </div>
+              <div class="text-xs">remove the <strong>?demo=true</strong> in the URL to share this without this section</div>
             </div>
           {{ end }}
         </section>
@@ -88,11 +104,15 @@
         <div id="mapContainer"></div>  
       </div>
 
-      <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-4 px-2 lg:py-8">
+      <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-4 px-2 mb-2 lg:py-8">
         <!-- <a class="hover:text-white" href="https://codethings.net" target="_blank" rel="noopener noreferrer">codethings.net</a> -->
-        <a class="flex items-center gap-2 group hover:text-white" href="mailto:codethingsdotnet@gmail.com" target="_blank" rel="noopener noreferrer">
+        <a 
+          id="copy-email" 
+          text-to-copy="codethingsdotnet@gmail.com" 
+          class="flex items-center gap-2 cursor-pointer group hover:text-white">
+
           <span class="invisible group-hover:visible inline-block text-sm">codethingsdotnet@gmail.com</span>
-          <span class="inline-block text-xl">&#x2709;</span>
+          <span class="inline-block text-2xl">&#x2709;</span>
         </a>
       </footer>  
     </div>
@@ -155,7 +175,7 @@
               behavior: "smooth"
             });
           }
-        }, 100);
+        }, 50);
       });
     
       const demoPrompt = document.getElementById("demoPrompt");
@@ -163,11 +183,16 @@
         const pasteDemoUrlButton = document.getElementById("pasteDemoUrl");
         const sheetUrlInput = document.getElementById("sheetUrl");
         pasteDemoUrlButton.addEventListener("click", () => {
-          const urlToPaste = pasteDemoUrlButton.getAttribute("copy-target");
+          const urlToPaste = pasteDemoUrlButton.getAttribute("text-to-copy");
           sheetUrlInput.value = urlToPaste;
           sheetUrlInput.dispatchEvent(new Event("paste"));
         });
       }
+    
+      bindCopyListener({ 
+        elementId: 'copy-email', 
+        copyMessage: 'Email copied!' 
+      });
     </script>
   </body>
 </html>
