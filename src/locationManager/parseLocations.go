@@ -48,27 +48,33 @@ func parseLocations(csvStream <-chan []string) ([]Location, error) {
 }
 
 func parseLocation(record []string, headerMap map[string]int) (Location, error) {
-	lat, err := strconv.ParseFloat(record[headerMap["Latitude"]], 64)
+	name := NewSanitizer(record[headerMap["Name"]]).MaxLength(100).Result()
+	address := NewSanitizer(record[headerMap["Address"]]).MaxLength(255).Result()
+	city := NewSanitizer(record[headerMap["City"]]).MaxLength(100).Result()
+	state := NewSanitizer(record[headerMap["State"]]).MaxLength(100).Result()
+	country := NewSanitizer(record[headerMap["Country"]]).MaxLength(100).Result()
+	website := NewSanitizer(record[headerMap["Website"]]).ValidateURL().Result()
+	phoneNumber := NewSanitizer(record[headerMap["Phone Number"]]).MaxLength(20).Result()
+
+	lat, err := strconv.ParseFloat(strings.TrimSpace(record[headerMap["Latitude"]]), 64)
 	if err != nil {
 		return Location{}, err
 	}
 
-	long, err := strconv.ParseFloat(record[headerMap["Longitude"]], 64)
+	long, err := strconv.ParseFloat(strings.TrimSpace(record[headerMap["Longitude"]]), 64)
 	if err != nil {
 		return Location{}, err
 	}
 
-	name := record[headerMap["Name"]]
-
-	log.Printf("record: %s", record)
+	// log.Printf("record: %s", record)
 	parsedLoc := Location{
 		Name:        name,
-		Address:     record[headerMap["Address"]],
-		City:        record[headerMap["City"]],
-		State:       record[headerMap["State"]],
-		Country:     record[headerMap["Country"]],
-		Website:     record[headerMap["Website"]],
-		PhoneNumber: record[headerMap["Phone Number"]],
+		Address:     address,
+		City:        city,
+		State:       state,
+		Country:     country,
+		Website:     website,
+		PhoneNumber: phoneNumber,
 		Latitude:    lat,
 		Longitude:   long,
 		IsCo404Loc:  containsCo404(name),
