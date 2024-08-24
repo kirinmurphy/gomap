@@ -6,7 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func getLocationsRouteHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client) {
+func getLocationsRouteHandler(w http.ResponseWriter, r *http.Request, redisClient RedisClientInterface) {
 	sheetId := r.URL.Query().Get("sheetId")
 	if sheetId == "" {
 		http.Error(w, "Missing sheetId parameter", http.StatusBadRequest)

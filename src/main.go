@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 
 	"gomap/src/router"
@@ -32,5 +33,8 @@ func init() {
 }
 
 func main() {
-	router.InitRouter(redisClient, ctx)
+	r := router.InitRouter(redisClient, ctx)
+
+	log.Println("Server starting on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
