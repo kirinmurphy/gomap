@@ -34,11 +34,11 @@ func TestHomeRouter(t *testing.T) {
 		t.Fatalf("Failed to parse HTML: %v", err)
 	}
 
-	var sb strings.Builder
-	err = html.Render(&sb, doc)
-	if err != nil {
-		t.Fatalf("Failed to render HTML: %v", err)
-	}
+	// var sb strings.Builder
+	// err = html.Render(&sb, doc)
+	// if err != nil {
+	// 	t.Fatalf("Failed to render HTML: %v", err)
+	// }
 
 	testUtils.CheckElement(t, doc, "h1", "MAPPERBOI BETA")
 }

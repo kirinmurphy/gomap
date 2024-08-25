@@ -1,7 +1,7 @@
 # .air.toml
 [build]
 # Command to build your Go application; adjust to include the /src directory
-cmd = "go build -o ./tmp/main ./src"
+cmd = "sh -c './scripts/local-test-runner.sh & go build -o ./tmp/main ./src'"
 
 # The output binary location
 bin = "./tmp/main"
