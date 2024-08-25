@@ -5,19 +5,19 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/mock"
 )
 
 type MockRedisClient struct {
-	GetFunc func(ctx context.Context, key string) *redis.StringCmd
+	mock.Mock
 }
 
 func (m *MockRedisClient) Get(ctx context.Context, key string) *redis.StringCmd {
-	if m.GetFunc != nil {
-		return m.GetFunc(ctx, key)
-	}
-	return redis.NewStringResult("", redis.Nil)
+	args := m.Called(ctx, key)
+	return args.Get(0).(*redis.StringCmd)
 }
 
 func (m *MockRedisClient) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	return redis.NewStatusResult("OK", nil)
+	args := m.Called(ctx, key, value, expiration)
+	return args.Get(0).(*redis.StatusCmd)
 }

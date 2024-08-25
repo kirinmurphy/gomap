@@ -13,6 +13,7 @@ func getLocationsRouteHandler(w http.ResponseWriter, r *http.Request, redisClien
 		return
 	}
 
+	// log.Println("Calling Redis Get method with key:", sheetId)
 	locationsJson, err := redisClient.Get(r.Context(), sheetId).Bytes()
 	if err == redis.Nil {
 		http.Error(w, "No locations found", http.StatusNotFound)

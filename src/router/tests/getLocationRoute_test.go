@@ -11,39 +11,34 @@ import (
 	"testing"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetLocationsRoute(t *testing.T) {
-	ctx := context.Background()
-	mockRedisClient := &testUtils.MockRedisClient{}
-
-	r := router.InitRouter(mockRedisClient, ctx)
+	contextMatcher := mock.MatchedBy(func(ctx context.Context) bool { return true })
 
 	tests := []struct {
 		name            string
 		sheetId         string
-		setupMock       func()
+		setupMock       func(mockRedisClient *testUtils.MockRedisClient)
 		expectedStatus  int
 		expectedMessage string
 	}{
 		{
-			name:    "Missing sheetId",
-			sheetId: "",
-			setupMock: func() {
-				mockRedisClient.GetFunc = func(ctx context.Context, key string) *redis.StringCmd {
-					return redis.NewStringResult("", redis.Nil)
-				}
-			},
+			name:            "Missing sheetId",
+			sheetId:         "",
+			setupMock:       func(mockRedisClient *testUtils.MockRedisClient) {},
 			expectedStatus:  http.StatusBadRequest,
 			expectedMessage: "Missing sheetId parameter",
 		},
 		{
 			name:    "No locations found",
 			sheetId: "nonexistent",
-			setupMock: func() {
-				mockRedisClient.GetFunc = func(ctx context.Context, key string) *redis.StringCmd {
-					return redis.NewStringResult("", redis.Nil)
-				}
+			setupMock: func(mockRedisClient *testUtils.MockRedisClient) {
+				mockRedisClient.On("Get", contextMatcher, "nonexistent").Return(
+					redis.NewStringResult("", redis.Nil),
+				).Once()
 			},
 			expectedStatus:  http.StatusNotFound,
 			expectedMessage: "No locations found",
@@ -51,12 +46,10 @@ func TestGetLocationsRoute(t *testing.T) {
 		{
 			name:    "Redis Internal Error",
 			sheetId: "errorSheet",
-			setupMock: func() {
-				mockRedisClient.GetFunc = func(ctx context.Context, key string) *redis.StringCmd {
-					cmd := redis.NewStringResult("", nil)
-					cmd.SetErr(errors.New("Redis error"))
-					return cmd
-				}
+			setupMock: func(mockRedisClient *testUtils.MockRedisClient) {
+				cmd := redis.NewStringResult("", nil)
+				cmd.SetErr(errors.New("Redis error"))
+				mockRedisClient.On("Get", contextMatcher, "errorSheet").Return(cmd).Once()
 			},
 			expectedStatus:  http.StatusInternalServerError,
 			expectedMessage: "Redis error",
@@ -64,10 +57,10 @@ func TestGetLocationsRoute(t *testing.T) {
 		{
 			name:    "Valid locations found",
 			sheetId: "validSheet",
-			setupMock: func() {
-				mockRedisClient.GetFunc = func(ctx context.Context, key string) *redis.StringCmd {
-					return redis.NewStringResult(`{"location": "data"}`, nil)
-				}
+			setupMock: func(mockRedisClient *testUtils.MockRedisClient) {
+				mockRedisClient.On("Get", contextMatcher, "validSheet").Return(
+					redis.NewStringResult(`{"location": "data"}`, nil),
+				).Once()
 			},
 			expectedStatus:  http.StatusOK,
 			expectedMessage: `{"location": "data"}`,
@@ -76,7 +69,12 @@ func TestGetLocationsRoute(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.setupMock()
+			ctx := context.Background()
+			mockRedisClient := new(testUtils.MockRedisClient)
+
+			test.setupMock(mockRedisClient)
+
+			r := router.InitRouter(mockRedisClient, ctx)
 
 			req, err := http.NewRequest("GET", "/getLocations?sheetId="+test.sheetId, nil)
 			if err != nil {
@@ -86,13 +84,10 @@ func TestGetLocationsRoute(t *testing.T) {
 			routerRecorder := httptest.NewRecorder()
 			r.ServeHTTP(routerRecorder, req)
 
-			if routerRecorder.Code != test.expectedStatus {
-				t.Errorf("Expected status code %d, got %d", test.expectedStatus, routerRecorder.Code)
-			}
+			assert.Equal(t, test.expectedStatus, routerRecorder.Code)
+			assert.Equal(t, strings.TrimSpace(test.expectedMessage), strings.TrimSpace(routerRecorder.Body.String()))
 
-			if strings.TrimSpace(routerRecorder.Body.String()) != strings.TrimSpace(test.expectedMessage) {
-				t.Errorf("Expected message %s, got %s", test.expectedMessage, routerRecorder.Body.String())
-			}
+			mockRedisClient.AssertExpectations(t)
 		})
 	}
 }

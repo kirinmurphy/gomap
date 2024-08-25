@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/html"
 )
 
@@ -15,10 +16,8 @@ func CheckElement(t *testing.T, n *html.Node, tag string, expectedContent string
 		extractText(n, &textContent)
 		actualContent := cleanTextContent(textContent.String())
 
-		contentDoesNotMatch := expectedContent != "" && actualContent != expectedContent
-		if contentDoesNotMatch {
-			t.Errorf("Expected <%s> content to be %q, but got %q", tag, expectedContent, actualContent)
-			return true
+		if expectedContent != "" {
+			assert.Equal(t, expectedContent, actualContent, "Expected <%s> content to be %q, but got %q", tag, expectedContent, actualContent)
 		}
 		return true
 	}
