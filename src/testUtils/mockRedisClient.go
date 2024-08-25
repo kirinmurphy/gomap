@@ -7,9 +7,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type MockRedisClient struct{}
+type MockRedisClient struct {
+	GetFunc func(ctx context.Context, key string) *redis.StringCmd
+}
 
 func (m *MockRedisClient) Get(ctx context.Context, key string) *redis.StringCmd {
+	if m.GetFunc != nil {
+		return m.GetFunc(ctx, key)
+	}
 	return redis.NewStringResult("", redis.Nil)
 }
 

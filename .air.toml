@@ -12,12 +12,8 @@ include_dir = ["src", "templates"]
 # File extensions to watch
 include_ext = ["go", "html", "css", "js"]
 
-# explicitly watch test files
-include = ["**/*.go", "**/*_test.go"]
-
 # Exclude directories
 exclude_dir = ["tmp"]
-
 
 [log]
 level = "debug"

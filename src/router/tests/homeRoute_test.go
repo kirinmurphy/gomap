@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"gomap/src/router"
 	"gomap/src/testUtils"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/net/html"
 )
 
@@ -18,10 +20,15 @@ var (
 	mapIdString   = "id=\"map\""
 )
 
-func setupRouterTest(t *testing.T, queryParam string) (string, *html.Node) {
+func setupRouterTest(t *testing.T, queryParam string, redisGetFunc func(ctx context.Context, key string) *redis.StringCmd) (string, *html.Node) {
 	ctx := context.Background()
+
 	mockRedisClient := &testUtils.MockRedisClient{}
-	router := router.InitRouter(mockRedisClient, ctx)
+	if redisGetFunc != nil {
+		mockRedisClient.GetFunc = redisGetFunc
+	}
+
+	r := router.InitRouter(mockRedisClient, ctx)
 
 	req, err := http.NewRequest("GET", "/"+queryParam, nil)
 	if err != nil {
@@ -29,7 +36,7 @@ func setupRouterTest(t *testing.T, queryParam string) (string, *html.Node) {
 	}
 
 	routerRecorder := httptest.NewRecorder()
-	router.ServeHTTP(routerRecorder, req)
+	r.ServeHTTP(routerRecorder, req)
 
 	if routerRecorder.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, got %d", http.StatusOK, routerRecorder.Code)
@@ -44,8 +51,8 @@ func setupRouterTest(t *testing.T, queryParam string) (string, *html.Node) {
 	return stringifiedDoc, htmlDoc
 }
 
-func TestHomeRouter(t *testing.T) {
-	stringifiedDoc, htmlDoc := setupRouterTest(t, "")
+func TestHomeRouter_Default(t *testing.T) {
+	stringifiedDoc, htmlDoc := setupRouterTest(t, "", nil)
 
 	testUtils.CheckElement(t, htmlDoc, "h1", homepageTitle)
 
@@ -59,7 +66,7 @@ func TestHomeRouter(t *testing.T) {
 }
 
 func TestHomeRouter_WithDemo(t *testing.T) {
-	stringifiedDoc, _ := setupRouterTest(t, "?demo=true")
+	stringifiedDoc, _ := setupRouterTest(t, "?demo=true", nil)
 
 	if !strings.Contains(stringifiedDoc, demoPrompt) {
 		t.Errorf("Demo section NOT displayed with demo=true query param")
@@ -67,9 +74,24 @@ func TestHomeRouter_WithDemo(t *testing.T) {
 }
 
 func TestHomeRouter_WithSheetId(t *testing.T) {
-	stringifiedDoc, _ := setupRouterTest(t, "?sheetId=2PACK-3kj3l2kjf32f")
+	sheetId := "2PACK-3kj3l2kjf32f"
+	sheetIdParam := "?sheetId=" + sheetId
+
+	stringifiedDoc, _ := setupRouterTest(t, sheetIdParam,
+		func(ctx context.Context, key string) *redis.StringCmd {
+			if key == sheetId {
+				return redis.NewStringResult("mocked result", nil)
+			}
+			return redis.NewStringResult("", redis.Nil)
+		},
+	)
 
 	if !strings.Contains(stringifiedDoc, mapIdString) {
 		t.Errorf("Map state NOT displayed with sheetId query param")
+	}
+
+	hxMapQuery := fmt.Sprintf(`hx-get="/getLocations?sheetId=%s"`, sheetId)
+	if !strings.Contains(stringifiedDoc, hxMapQuery) {
+		t.Errorf("hxQuery for map data NOT present")
 	}
 }
