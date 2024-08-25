@@ -13,10 +13,9 @@ import (
 )
 
 var (
-	demoPrompt      = "You are using the demo version."
-	homepageTitle   = "MAPPERBOI BETA"
-	homepageTagline = "Website Map Generator"
-	mapIdString     = "id=\"map\""
+	demoPrompt    = "You are using the demo version."
+	homepageTitle = "MAPPERBOI BETA"
+	mapIdString   = "id=\"map\""
 )
 
 func setupRouterTest(t *testing.T, queryParam string) (string, *html.Node) {
@@ -68,7 +67,6 @@ func TestHomeRouter_WithDemo(t *testing.T) {
 }
 
 func TestHomeRouter_WithSheetId(t *testing.T) {
-	t.Skip("Skipping this test")
 	stringifiedDoc, _ := setupRouterTest(t, "?sheetId=2PACK-3kj3l2kjf32f")
 
 	if !strings.Contains(stringifiedDoc, mapIdString) {
