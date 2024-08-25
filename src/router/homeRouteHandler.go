@@ -3,18 +3,23 @@ package router
 import (
 	"context"
 	"net/http"
+	"path/filepath"
 	"text/template"
 
 	"github.com/redis/go-redis/v9"
 )
 
 var (
-	homepageTemplate = template.Must(template.ParseFiles("src/templates/home.html"))
-	mapPageTemplate  = template.Must(template.ParseFiles("src/templates/map.html"))
+	homepageTemplate *template.Template
+	mapPageTemplate  *template.Template
 )
 
-func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client, ctx context.Context) {
+func InitializeHomePageTemplates(templateDir string) {
+	homepageTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "home.html")))
+	mapPageTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "map.html")))
+}
 
+func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient RedisClientInterface, ctx context.Context) {
 	sheetId := r.URL.Query().Get("sheetId")
 	if sheetId == "" {
 		demoFlag := r.URL.Query().Get("demo")

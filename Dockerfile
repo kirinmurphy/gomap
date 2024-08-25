@@ -11,7 +11,7 @@
   
   WORKDIR /app/src
   
-  RUN go build -o /app/main .
+  RUN go test -count=1 ./... && go build -o /app/main .
   
   ## -- YARN BUILD ------- 
   FROM node:18 as frontend-builder

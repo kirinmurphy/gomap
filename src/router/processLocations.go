@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"gomap/src/locationManager"
-
-	"github.com/redis/go-redis/v9"
 )
 
-func processLocations(sheetId string, redisClient *redis.Client, ctx context.Context) error {
+func processLocations(sheetId string, redisClient RedisClientInterface, ctx context.Context) error {
 	spreadsheetUrl := fmt.Sprintf(baseSpreadsheetUrl, sheetId)
 
 	parsedLocations, err := locationManager.LoadLocations(spreadsheetUrl)

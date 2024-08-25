@@ -4,16 +4,20 @@ import (
 	"context"
 	"html/template"
 	"net/http"
-
-	"github.com/redis/go-redis/v9"
+	"path/filepath"
 )
 
 var (
-	errorTemplate   = template.Must(template.ParseFiles("src/templates/loadLocationsError.html"))
-	successTemplate = template.Must(template.ParseFiles("src/templates/loadlLocationsSuccess.html"))
+	errorTemplate   *template.Template
+	successTemplate *template.Template
 )
 
-func updateMapUIHandler(w http.ResponseWriter, r *http.Request, redisClient *redis.Client, ctx context.Context) {
+func InitializeUpdateMapUITemplates(templateDir string) {
+	errorTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "loadLocationsError.html")))
+	successTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "loadlLocationsSuccess.html")))
+}
+
+func updateMapUIHandler(w http.ResponseWriter, r *http.Request, redisClient RedisClientInterface, ctx context.Context) {
 	w.Header().Set("Content-Type", "text/html")
 
 	sheetId := r.FormValue("sheetId")

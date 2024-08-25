@@ -13,7 +13,8 @@ Create a map for your website with a google spreadsheet.
 
 
 ## Stack
-- Server logic built with Go
+- Server API built with Go
+- Data cached in Redis
 - Client API endpoints called with HTMX
 - Styled with TailwindCSS
 - Map instance built with Leaflet
