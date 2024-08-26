@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -17,7 +16,7 @@ func InitializeUpdateMapUITemplates(templateDir string) {
 	successTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "loadlLocationsSuccess.html")))
 }
 
-func updateMapUIHandler(w http.ResponseWriter, r *http.Request, redisClient RedisClientInterface, ctx context.Context) {
+func updateMapUIHandler(w http.ResponseWriter, r *http.Request, routerConfig RouterConfig) {
 	w.Header().Set("Content-Type", "text/html")
 
 	sheetId := r.FormValue("sheetId")
@@ -26,7 +25,7 @@ func updateMapUIHandler(w http.ResponseWriter, r *http.Request, redisClient Redi
 		return
 	}
 
-	err := processLocations(sheetId, redisClient, ctx)
+	err := processLocations(sheetId, routerConfig)
 	if err != nil {
 		renderErrorHTML(w, err.Error(), http.StatusInternalServerError)
 		return

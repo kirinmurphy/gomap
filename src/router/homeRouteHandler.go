@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"net/http"
 	"path/filepath"
 	"text/template"
@@ -19,7 +18,7 @@ func InitializeHomePageTemplates(templateDir string) {
 	mapPageTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "map.html")))
 }
 
-func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient RedisClientInterface, ctx context.Context) {
+func homeRouteHandler(w http.ResponseWriter, r *http.Request, config RouterConfig) {
 	sheetId := r.URL.Query().Get("sheetId")
 	if sheetId == "" {
 		demoFlag := r.URL.Query().Get("demo")
@@ -31,7 +30,7 @@ func homeRouteHandler(w http.ResponseWriter, r *http.Request, redisClient RedisC
 		return
 	}
 
-	_, err := redisClient.Get(ctx, sheetId).Result()
+	_, err := config.RedisClient.Get(config.Ctx, sheetId).Result()
 	if err == redis.Nil {
 		http.Error(w, "Could not find spreadsheet id ${sheetId}", http.StatusNotFound)
 		return
