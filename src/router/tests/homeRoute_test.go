@@ -28,28 +28,32 @@ type RouterTestConfig struct {
 	MockRedisClient *testUtils.MockRedisClient
 }
 
-func setupRouterTest(config RouterTestConfig) (string, *html.Node) {
+func setupRouterTest(testConfig RouterTestConfig) (string, *html.Node) {
 	ctx := context.Background()
 
-	if config.MockRedisClient == nil {
-		config.MockRedisClient = &testUtils.MockRedisClient{}
+	if testConfig.MockRedisClient == nil {
+		testConfig.MockRedisClient = &testUtils.MockRedisClient{}
 	}
 
-	r := router.InitRouter(config.MockRedisClient, ctx)
+	r := router.InitRouter(router.RouterConfig{
+		RedisClient:        testConfig.MockRedisClient,
+		Ctx:                ctx,
+		BaseSpreadsheetUrl: "asdf_%s_asdf",
+	})
 
-	req, err := http.NewRequest("GET", "/"+config.QueryParam, nil)
+	req, err := http.NewRequest("GET", "/"+testConfig.QueryParam, nil)
 	if err != nil {
-		config.T.Fatal(err)
+		testConfig.T.Fatal(err)
 	}
 
 	routerRecorder := httptest.NewRecorder()
 	r.ServeHTTP(routerRecorder, req)
 
-	assert.Equal(config.T, http.StatusOK, routerRecorder.Code)
+	assert.Equal(testConfig.T, http.StatusOK, routerRecorder.Code)
 
 	stringifiedDoc := routerRecorder.Body.String()
 	htmlDoc, err := html.Parse(strings.NewReader(stringifiedDoc))
-	assert.NoError(config.T, err)
+	assert.NoError(testConfig.T, err)
 
 	return stringifiedDoc, htmlDoc
 }

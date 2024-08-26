@@ -1,41 +1,33 @@
 package router
 
 import (
-	"context"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/redis/go-redis/v9"
 )
-
-type RedisClientInterface interface {
-	Get(ctx context.Context, key string) *redis.StringCmd
-	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
-}
 
 var templateDir = "src/templates"
 
-func InitRouter(redisClient RedisClientInterface, ctx context.Context) *mux.Router {
+func InitRouter(routerConfig RouterConfig) *mux.Router {
 	r := mux.NewRouter()
 
 	InitializeHomePageTemplates(templateDir)
 	InitializeUpdateMapUITemplates(templateDir)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		homeRouteHandler(w, r, redisClient, ctx)
+		homeRouteHandler(w, r, routerConfig)
 	})
 
 	r.HandleFunc("/updateMapUI", func(w http.ResponseWriter, r *http.Request) {
-		updateMapUIHandler(w, r, redisClient, ctx)
+		updateMapUIHandler(w, r, routerConfig)
 	}).Methods("POST")
 
 	r.HandleFunc("/loadLocations", func(w http.ResponseWriter, r *http.Request) {
-		loadLocationsRouteHandler(w, r, redisClient, ctx)
+		loadLocationsRouteHandler(w, r, routerConfig)
 	}).Methods("GET")
 
 	r.HandleFunc("/getLocations", func(w http.ResponseWriter, r *http.Request) {
-		getLocationsRouteHandler(w, r, redisClient)
+		getLocationsRouteHandler(w, r, routerConfig.RedisClient)
 	})
 
 	r.PathPrefix("/src/templates/").Handler(

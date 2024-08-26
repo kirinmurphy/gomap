@@ -15,6 +15,8 @@ import (
 var redisClient *redis.Client
 var ctx = context.Background()
 
+const BASE_SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/e/%s/pub?gid=0&single=true&output=csv"
+
 func init() {
 	godotenv.Load()
 
@@ -33,7 +35,11 @@ func init() {
 }
 
 func main() {
-	r := router.InitRouter(redisClient, ctx)
+	r := router.InitRouter(router.RouterConfig{
+		RedisClient:        redisClient,
+		Ctx:                ctx,
+		BaseSpreadsheetUrl: BASE_SPREADSHEET_URL,
+	})
 
 	log.Println("Server starting on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

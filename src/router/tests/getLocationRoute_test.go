@@ -74,7 +74,11 @@ func TestGetLocationsRoute(t *testing.T) {
 
 			test.setupMock(mockRedisClient)
 
-			r := router.InitRouter(mockRedisClient, ctx)
+			r := router.InitRouter(router.RouterConfig{
+				RedisClient:        mockRedisClient,
+				Ctx:                ctx,
+				BaseSpreadsheetUrl: "asdf_%s_asdf",
+			})
 
 			req, err := http.NewRequest("GET", "/getLocations?sheetId="+test.sheetId, nil)
 			if err != nil {

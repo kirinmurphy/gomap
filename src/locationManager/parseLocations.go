@@ -1,7 +1,6 @@
 package locationManager
 
 import (
-	"log"
 	"strconv"
 	"strings"
 )
@@ -32,7 +31,7 @@ func parseLocations(csvStream <-chan []string) ([]Location, error) {
 				headerMap[header] = i
 			}
 			isHeader = false
-			log.Println("headerMap: ", headerMap)
+			// log.Println("headerMap: ", headerMap)
 			continue
 		}
 

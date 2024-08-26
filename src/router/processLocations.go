@@ -1,14 +1,13 @@
 package router
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"gomap/src/locationManager"
 )
 
-func processLocations(sheetId string, redisClient RedisClientInterface, ctx context.Context) error {
-	spreadsheetUrl := fmt.Sprintf(baseSpreadsheetUrl, sheetId)
+func processLocations(sheetId string, routerConfig RouterConfig) error {
+	spreadsheetUrl := fmt.Sprintf(routerConfig.BaseSpreadsheetUrl, sheetId)
 
 	parsedLocations, err := locationManager.LoadLocations(spreadsheetUrl)
 	if err != nil {
@@ -20,7 +19,7 @@ func processLocations(sheetId string, redisClient RedisClientInterface, ctx cont
 		return fmt.Errorf("failed to marshal locations: %w", err)
 	}
 
-	err = redisClient.Set(ctx, sheetId, locationsJson, 0).Err()
+	err = routerConfig.RedisClient.Set(routerConfig.Ctx, sheetId, locationsJson, 0).Err()
 	if err != nil {
 		return fmt.Errorf("failed to cache locations: %w", err)
 	}
