@@ -2,6 +2,7 @@ package locationManager
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -24,8 +25,7 @@ func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			log.Println("Unexpected status code:", resp.StatusCode)
-			errChan <- err
+			errChan <- fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 			close(csvStream)
 			close(errChan)
 			return
@@ -38,6 +38,7 @@ func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 			if err == io.EOF {
 				break
 			}
+
 			if err != nil {
 				log.Println("Error reading CSV:", err)
 				errChan <- err

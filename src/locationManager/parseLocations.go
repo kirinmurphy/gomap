@@ -1,6 +1,7 @@
 package locationManager
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -38,6 +39,10 @@ func parseLocations(csvStream <-chan []string) ([]Location, error) {
 
 		loc, err := parseLocation(record, headerMap)
 		if err != nil {
+			for range csvStream {
+				// draining the remaining
+			}
+			fmt.Printf("ERRRRRRRRORROORORORORO: %s", err)
 			return nil, err
 		}
 

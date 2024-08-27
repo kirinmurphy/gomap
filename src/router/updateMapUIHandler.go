@@ -16,7 +16,7 @@ func InitializeUpdateMapUITemplates(templateDir string) {
 	successTemplate = template.Must(template.ParseFiles(filepath.Join(templateDir, "loadlLocationsSuccess.html")))
 }
 
-func updateMapUIHandler(w http.ResponseWriter, r *http.Request, routerConfig RouterConfig) {
+func updateMapUIHandler(w http.ResponseWriter, r *http.Request, config RouterConfig) {
 	w.Header().Set("Content-Type", "text/html")
 
 	sheetId := r.FormValue("sheetId")
@@ -25,7 +25,7 @@ func updateMapUIHandler(w http.ResponseWriter, r *http.Request, routerConfig Rou
 		return
 	}
 
-	err := processLocations(sheetId, routerConfig)
+	err := processLocations(sheetId, config)
 	if err != nil {
 		renderErrorHTML(w, err.Error(), http.StatusInternalServerError)
 		return
