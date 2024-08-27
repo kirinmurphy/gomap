@@ -22,6 +22,52 @@ var (
 	mapIdString   = "id=\"map\""
 )
 
+func TestHomeRouter(t *testing.T) {
+	t.Run("Default", func(t *testing.T) {
+		stringifiedDoc, htmlDoc := setupRouterTest(RouterTestConfig{
+			T:          t,
+			QueryParam: "",
+		})
+
+		testUtils.CheckElement(t, htmlDoc, "h1", homepageTitle)
+
+		assert.NotContains(t, stringifiedDoc, demoPrompt, "Demo section displayed without demo=true query param")
+		assert.NotContains(t, stringifiedDoc, mapIdString, "Homepage map state displayed without sheetId query param")
+	})
+
+	t.Run("WithDemo", func(t *testing.T) {
+		stringifiedDoc, _ := setupRouterTest(RouterTestConfig{
+			T:          t,
+			QueryParam: "?demo=true",
+		})
+		assert.Contains(t, stringifiedDoc, demoPrompt, "Demo section NOT displayed with demo=true query param")
+	})
+
+	t.Run("WithSheetId", func(t *testing.T) {
+		sheetId := "2PACK-3kj3l2kjf32f"
+		sheetIdParam := "?sheetId=" + sheetId
+
+		mockRedisClient := &testUtils.MockRedisClient{}
+		contextMatcher := mock.MatchedBy(func(ctx context.Context) bool { return true })
+		keyMatcher := mock.MatchedBy(func(key string) bool { return key == sheetId })
+
+		mockRedisClient.On("Get", contextMatcher, keyMatcher).Return(
+			redis.NewStringResult(("mocked result"), nil),
+		)
+
+		stringifiedDoc, _ := setupRouterTest(RouterTestConfig{
+			T:               t,
+			QueryParam:      sheetIdParam,
+			MockRedisClient: mockRedisClient,
+		})
+
+		assert.Contains(t, stringifiedDoc, mapIdString, "Map state NOT displayed with sheetId query param")
+
+		hxMapQuery := fmt.Sprintf(`hx-get="/getLocations?sheetId=%s"`, sheetId)
+		assert.Contains(t, stringifiedDoc, hxMapQuery, "hxQuery for map data NOT present")
+	})
+}
+
 type RouterTestConfig struct {
 	T               *testing.T
 	QueryParam      string
@@ -56,48 +102,4 @@ func setupRouterTest(testConfig RouterTestConfig) (string, *html.Node) {
 	assert.NoError(testConfig.T, err)
 
 	return stringifiedDoc, htmlDoc
-}
-
-func TestHomeRouter_Default(t *testing.T) {
-	stringifiedDoc, htmlDoc := setupRouterTest(RouterTestConfig{
-		T:          t,
-		QueryParam: "",
-	})
-
-	testUtils.CheckElement(t, htmlDoc, "h1", homepageTitle)
-
-	assert.NotContains(t, stringifiedDoc, demoPrompt, "Demo section displayed without demo=true query param")
-	assert.NotContains(t, stringifiedDoc, mapIdString, "Homepage map state displayed without sheetId query param")
-}
-
-func TestHomeRouter_WithDemo(t *testing.T) {
-	stringifiedDoc, _ := setupRouterTest(RouterTestConfig{
-		T:          t,
-		QueryParam: "?demo=true",
-	})
-	assert.Contains(t, stringifiedDoc, demoPrompt, "Demo section NOT displayed with demo=true query param")
-}
-
-func TestHomeRouter_WithSheetId(t *testing.T) {
-	sheetId := "2PACK-3kj3l2kjf32f"
-	sheetIdParam := "?sheetId=" + sheetId
-
-	mockRedisClient := &testUtils.MockRedisClient{}
-	contextMatcher := mock.MatchedBy(func(ctx context.Context) bool { return true })
-	keyMatcher := mock.MatchedBy(func(key string) bool { return key == sheetId })
-
-	mockRedisClient.On("Get", contextMatcher, keyMatcher).Return(
-		redis.NewStringResult(("mocked result"), nil),
-	)
-
-	stringifiedDoc, _ := setupRouterTest(RouterTestConfig{
-		T:               t,
-		QueryParam:      sheetIdParam,
-		MockRedisClient: mockRedisClient,
-	})
-
-	assert.Contains(t, stringifiedDoc, mapIdString, "Map state NOT displayed with sheetId query param")
-
-	hxMapQuery := fmt.Sprintf(`hx-get="/getLocations?sheetId=%s"`, sheetId)
-	assert.Contains(t, stringifiedDoc, hxMapQuery, "hxQuery for map data NOT present")
 }
