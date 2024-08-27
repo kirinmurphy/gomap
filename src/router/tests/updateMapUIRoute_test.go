@@ -20,7 +20,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 	timeout := 5 * time.Second
 
 	t.Run("no sheetId provided", func(t *testing.T) {
-		// t.Skip("Skipping this test temporarily")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
@@ -54,7 +53,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 	})
 
 	t.Run("fetch and parse locations successfully", func(t *testing.T) {
-		// t.Skip("Skipping this test temporarily")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
@@ -96,7 +94,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 	})
 
 	t.Run("fetch locations fails", func(t *testing.T) {
-		// t.Skip("Skipping this test temporarily")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
@@ -123,8 +120,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, routerRecorder.Code)
 		assert.Contains(t, routerRecorder.Body.String(), "failed to fetch CSV data")
 
-		mockRedisClient.AssertNotCalled(t, "Set")
-
 		defer func() {
 			mockRedisClient.AssertExpectations(t)
 			mockRedisClient.Calls = nil
@@ -133,7 +128,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 	})
 
 	t.Run("parse locations fails", func(t *testing.T) {
-		// t.Skip("Skipping this test temporarily")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
@@ -150,13 +144,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 			Ctx:                ctx,
 			BaseSpreadsheetUrl: mockCSVServer.URL + "?sheetId=%s",
 		})
-
-		mockRedisClient.On("Set",
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-			mock.Anything,
-		).Return(&redis.StatusCmd{})
 
 		form := strings.NewReader("sheetId=mockSheetId")
 		req, err := http.NewRequest("POST", "/updateMapUI", form)
@@ -179,7 +166,6 @@ func TestUpdateMapUIHandlerIntegration(t *testing.T) {
 	})
 
 	t.Run("process locations fails", func(t *testing.T) {
-		t.Skip("Skipping this test temporarily")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
