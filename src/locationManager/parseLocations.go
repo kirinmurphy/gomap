@@ -1,6 +1,7 @@
 package locationManager
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -20,9 +21,7 @@ type Location struct {
 
 func parseLocations(csvStream <-chan []string) ([]Location, error) {
 	var locs []Location
-
 	headerMap := make(map[string]int)
-
 	isHeader := true
 
 	for record := range csvStream {
@@ -37,10 +36,17 @@ func parseLocations(csvStream <-chan []string) ([]Location, error) {
 
 		loc, err := parseLocation(record, headerMap)
 		if err != nil {
-			return nil, err
+			for range csvStream {
+				// draining the remaining
+			}
+			return nil, fmt.Errorf("failed to parse location: %w", err)
 		}
 
 		locs = append(locs, loc)
+	}
+
+	if len(locs) == 0 {
+		return nil, fmt.Errorf("no valid locations found in CSV")
 	}
 
 	return locs, nil

@@ -1,6 +1,7 @@
 package locationManager
 
 import (
+	"context"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -8,26 +9,32 @@ import (
 	"net/http"
 )
 
-func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
+func fetchLocationData(ctx context.Context, spreadsheetUrl string) (<-chan []string, <-chan error) {
 	csvStream := make(chan []string)
 	errChan := make(chan error, 1)
 
 	go func() {
-		resp, err := http.Get(spreadsheetUrl)
-		if err != nil {
-			log.Println("Error fetching URL:", err)
-			errChan <- err
+		defer func() {
 			close(csvStream)
 			close(errChan)
+		}()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", spreadsheetUrl, nil)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			errChan <- err
 			return
 		}
 
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			errChan <- fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-			close(csvStream)
-			close(errChan)
+			errChan <- fmt.Errorf("failed to fetch CSV data: unexpected status code: %d", resp.StatusCode)
 			return
 		}
 
@@ -38,20 +45,22 @@ func fetchLocationData(spreadsheetUrl string) (<-chan []string, <-chan error) {
 			if err == io.EOF {
 				break
 			}
+
 			if err != nil {
 				log.Println("Error reading CSV:", err)
 				errChan <- err
-				close(csvStream)
-				close(errChan)
 				return
 			}
 
-			csvStream <- record
+			select {
+			case csvStream <- record:
+			case <-ctx.Done():
+				errChan <- fmt.Errorf("the operation timed out, please check your spreadsheet and try again: %w", ctx.Err())
+				return
+			}
 		}
 
-		close(csvStream)
-		errChan <- nil
-		close(errChan)
+		// errChan <- nil
 	}()
 
 	return csvStream, errChan

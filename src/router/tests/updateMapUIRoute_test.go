@@ -3,219 +3,111 @@ package router
 import (
 	"context"
 	"errors"
-	"gomap/src/router"
 	"gomap/src/testUtils"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+const defaultValidCSVResponse = "Name,Address,City,State,Country,Website,Phone Number,Latitude,Longitude\nLocation 1,Address 1,City 1,State 1,Country 1,http://example.com,1234567890,40.7128,-74.0060\n"
+
 func TestUpdateMapUIHandlerIntegration(t *testing.T) {
-	timeout := 5 * time.Second
 
-	t.Run("no sheetId provided", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
+	testCases := []TestCaseConfig{
+		{
+			testName:          "processed_locations_successfully",
+			sheetId:           "mockSheetId",
+			mockCSVResponse:   defaultValidCSVResponse,
+			mockCSVStatusCode: http.StatusOK,
+			expectedStatus:    http.StatusOK,
+			expectedMessage:   `<iframe src="/?sheetId=mockSheetId" width="100%" height="300" frameborder="0"></iframe>`,
+			mockRedisSetup: func(mockRedisClient *testUtils.MockRedisClient, ctx context.Context) {
+				mockRedisClient.On("Set",
+					mock.Anything,
+					"mockSheetId",
+					mock.AnythingOfType("[]uint8"),
+					mock.AnythingOfType("time.Duration"),
+				).Return(&redis.StatusCmd{})
+			},
+		},
+		{
+			testName:          "no_sheetId_provided",
+			sheetId:           "",
+			mockCSVResponse:   "",
+			mockCSVStatusCode: http.StatusOK,
+			expectedStatus:    http.StatusBadRequest,
+			expectedMessage:   "Missing sheetId parameter",
+			mockRedisSetup:    nil,
+		},
+		{
+			testName:          "fetch_locations_fails",
+			sheetId:           "mockSheetId",
+			mockCSVResponse:   "",
+			mockCSVStatusCode: http.StatusInternalServerError,
+			expectedStatus:    http.StatusInternalServerError,
+			expectedMessage:   "failed to fetch CSV data",
+			mockRedisSetup:    nil,
+		},
+		{
+			testName: "parse_locations_fails",
+			sheetId:  "mockSheetId",
+			mockCSVResponse: `Name,Address,City,State,Country,Website,Phone Number,Latitude,Longitude
+		    Location 1,Address 1,City 1,State 1,Country 1,https://example.com,1234567890,INVALID_LAT,INVALID_LONG`,
+			mockCSVStatusCode: http.StatusOK,
+			expectedStatus:    http.StatusInternalServerError,
+			expectedMessage:   "failed to parse locations",
+			mockRedisSetup:    nil,
+		},
+		{
+			testName:          "invalid_CSV_format",
+			sheetId:           "mockSheetId",
+			mockCSVResponse:   "Name,Address\nLocation 1,Address 1\n",
+			mockCSVStatusCode: http.StatusOK,
+			expectedStatus:    http.StatusInternalServerError,
+			expectedMessage:   "failed to parse locations",
+			mockRedisSetup:    nil,
+		},
+		{
+			testName:          "empty_CSV",
+			sheetId:           "mockSheetId",
+			mockCSVResponse:   "",
+			mockCSVStatusCode: http.StatusOK,
+			expectedStatus:    http.StatusInternalServerError,
+			expectedMessage:   "no valid locations found in CSV",
+			mockRedisSetup:    nil,
+		},
+		// {
+		// 	testName:          "slow_CSV_server",
+		// 	sheetId:           "mockSheetId",
+		// 	mockCSVResponse:   defaultValidCSVResponse,
+		// 	mockCSVStatusCode: http.StatusOK,
+		// 	expectedStatus:    http.StatusInternalServerError,
+		// 	expectedMessage:   "the operation timed out, please check your spreadsheet and try again",
+		// 	mockRedisSetup:    nil,
+		// },
+		{
+			testName:          "process_locations_fails",
+			sheetId:           "mockSheetId",
+			mockCSVResponse:   defaultValidCSVResponse,
+			mockCSVStatusCode: http.StatusOK,
+			expectedStatus:    http.StatusInternalServerError,
+			expectedMessage:   "failed to cache locations",
+			mockRedisSetup: func(mockRedisClient *testUtils.MockRedisClient, ctx context.Context) {
+				statusCmd := redis.NewStatusCmd(ctx)
+				statusCmd.SetErr(errors.New("failed to cache locations"))
+				mockRedisClient.On("Set",
+					mock.Anything,
+					"mockSheetId",
+					mock.Anything,
+					mock.Anything,
+				).Return(statusCmd)
+			},
+		},
+	}
 
-		mockRedisClient := &testUtils.MockRedisClient{}
-		mockCSVServer := createMockCSVServer("", http.StatusOK)
-		defer mockCSVServer.Close()
-
-		r := router.InitRouter(router.RouterConfig{
-			RedisClient:        mockRedisClient,
-			Ctx:                ctx,
-			BaseSpreadsheetUrl: mockCSVServer.URL + "?sheetId=%s",
-		})
-
-		req, err := http.NewRequest("POST", "/updateMapUI", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		routerRecorder := httptest.NewRecorder()
-		r.ServeHTTP(routerRecorder, req)
-
-		assert.Equal(t, http.StatusBadRequest, routerRecorder.Code)
-		assert.Contains(t, routerRecorder.Body.String(), "Missing sheetId parameter")
-
-		defer func() {
-			mockRedisClient.AssertExpectations(t)
-			mockRedisClient.Calls = nil
-			mockRedisClient.ExpectedCalls = nil
-		}()
-	})
-
-	t.Run("fetch and parse locations successfully", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		mockRedisClient := &testUtils.MockRedisClient{}
-		mockCSVServer := createMockCSVServer("", http.StatusOK)
-		defer mockCSVServer.Close()
-
-		r := router.InitRouter(router.RouterConfig{
-			RedisClient:        mockRedisClient,
-			Ctx:                ctx,
-			BaseSpreadsheetUrl: mockCSVServer.URL + "?sheetId=%s",
-		})
-
-		mockRedisClient.On("Set",
-			mock.Anything,
-			mock.AnythingOfType("string"),
-			mock.AnythingOfType("[]uint8"),
-			mock.AnythingOfType("time.Duration"),
-		).Return(&redis.StatusCmd{})
-
-		form := strings.NewReader("sheetId=mockSheetId")
-		req, err := http.NewRequest("POST", "/updateMapUI", form)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		routerRecorder := httptest.NewRecorder()
-		r.ServeHTTP(routerRecorder, req)
-
-		assert.Equal(t, http.StatusOK, routerRecorder.Code)
-		assert.Contains(t, routerRecorder.Body.String(), "mockSheetId")
-
-		defer func() {
-			mockRedisClient.AssertExpectations(t)
-			mockRedisClient.Calls = nil
-			mockRedisClient.ExpectedCalls = nil
-		}()
-	})
-
-	t.Run("fetch locations fails", func(t *testing.T) {
-		// t.Skip("Skipping this test temporarily")
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		mockRedisClient := &testUtils.MockRedisClient{}
-		mockCSVServer := createMockCSVServer("", http.StatusInternalServerError)
-		defer mockCSVServer.Close()
-
-		r := router.InitRouter(router.RouterConfig{
-			RedisClient:        mockRedisClient,
-			Ctx:                ctx,
-			BaseSpreadsheetUrl: mockCSVServer.URL + "?sheetId=%s",
-		})
-
-		form := strings.NewReader("sheetId=mockSheetId")
-		req, err := http.NewRequest("POST", "/updateMapUI", form)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		routerRecorder := httptest.NewRecorder()
-		r.ServeHTTP(routerRecorder, req)
-
-		assert.Equal(t, http.StatusInternalServerError, routerRecorder.Code)
-		assert.Contains(t, routerRecorder.Body.String(), "failed to fetch CSV data")
-
-		defer func() {
-			mockRedisClient.AssertExpectations(t)
-			mockRedisClient.Calls = nil
-			mockRedisClient.ExpectedCalls = nil
-		}()
-	})
-
-	t.Run("parse locations fails", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		mockRedisClient := &testUtils.MockRedisClient{}
-
-		invalidCSV := "Name,Address,City,State,Country,Website,Phone Number,Latitude,Longitude\n" +
-			"Location 1,Address 1,City 1,State 1,Country 1,https://example.com, 1234567890,INVALID_LAT,INVALID_LONG\n"
-
-		mockCSVServer := createMockCSVServer(invalidCSV, http.StatusOK)
-		defer mockCSVServer.Close()
-
-		r := router.InitRouter(router.RouterConfig{
-			RedisClient:        mockRedisClient,
-			Ctx:                ctx,
-			BaseSpreadsheetUrl: mockCSVServer.URL + "?sheetId=%s",
-		})
-
-		form := strings.NewReader("sheetId=mockSheetId")
-		req, err := http.NewRequest("POST", "/updateMapUI", form)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		routerRecorder := httptest.NewRecorder()
-		r.ServeHTTP(routerRecorder, req)
-
-		assert.Equal(t, http.StatusInternalServerError, routerRecorder.Code)
-		assert.Contains(t, routerRecorder.Body.String(), "failed to parse locations")
-
-		defer func() {
-			mockRedisClient.AssertExpectations(t)
-			mockRedisClient.Calls = nil
-			mockRedisClient.ExpectedCalls = nil
-		}()
-	})
-
-	t.Run("process locations fails", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		mockRedisClient := &testUtils.MockRedisClient{}
-		mockRedisClient.AssertExpectations(t)
-		mockRedisClient.ExpectedCalls = nil
-
-		mockCSVServer := createMockCSVServer("", http.StatusOK)
-		defer mockCSVServer.Close()
-
-		r := router.InitRouter(router.RouterConfig{
-			RedisClient:        mockRedisClient,
-			Ctx:                ctx,
-			BaseSpreadsheetUrl: mockCSVServer.URL + "?sheetId=%s",
-		})
-
-		statusCmd := redis.NewStatusCmd(ctx)
-		statusCmd.SetErr(errors.New("failed to cache locations"))
-		mockRedisClient.On("Set",
-			mock.Anything,
-			"mockSheetId",
-			mock.Anything,
-			mock.Anything,
-		).Return(statusCmd)
-
-		form := strings.NewReader("sheetId=mockSheetId")
-		req, err := http.NewRequest("POST", "/updateMapUI", form)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		routerRecorder := httptest.NewRecorder()
-		r.ServeHTTP(routerRecorder, req)
-
-		assert.Equal(t, http.StatusInternalServerError, routerRecorder.Code)
-		assert.Contains(t, routerRecorder.Body.String(), "failed to cache locations")
-
-		defer func() {
-			mockRedisClient.AssertExpectations(t)
-			mockRedisClient.Calls = nil
-			mockRedisClient.ExpectedCalls = nil
-		}()
-	})
-}
-
-func createMockCSVServer(response string, statusCode int) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(statusCode)
-		_, _ = w.Write([]byte(response))
-	}))
+	for _, testCase := range testCases {
+		runTestCase(t, testCase)
+	}
 }

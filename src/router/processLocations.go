@@ -9,9 +9,9 @@ import (
 func processLocations(sheetId string, routerConfig RouterConfig) error {
 	spreadsheetUrl := fmt.Sprintf(routerConfig.BaseSpreadsheetUrl, sheetId)
 
-	parsedLocations, err := locationManager.LoadLocations(spreadsheetUrl)
+	parsedLocations, err := locationManager.LoadLocations(routerConfig.Ctx, spreadsheetUrl)
 	if err != nil {
-		return fmt.Errorf("failed to load locations: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	locationsJson, err := json.Marshal(parsedLocations)
