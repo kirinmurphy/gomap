@@ -1,14 +1,14 @@
-# MapperBoi
+# Mapperizer
 ### Website Map Generator
 
-[mapperboi.codethings.net](https://mapperboi.codethings.net/?demo=true)
+[mapperizer.codethings.net](https://mapperizer.codethings.net/?demo=true)
 
 Create a map for your website with a google spreadsheet.      
 
 
 - Create google spreadsheet with specific field headers (or [clone it from here](https://docs.google.com/spreadsheets/d/1KX8kjoQ7RxFDh0T8roQ83JwIyd8w8etRIJfdJljCook/edit?gid=0#gid=0))
 - Add your locations   
-- Publish and sync your spreadsheet at [mapperboi.codethings.net](https://mapperboi.codethings.net)
+- Publish and sync your spreadsheet at [mapperizer.codethings.net](https://mapperizer.codethings.net)
 - Paste your iframe snippet into your website 
 
 

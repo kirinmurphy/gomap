@@ -18,7 +18,7 @@ import (
 
 var (
 	demoPrompt    = "You are using the demo version."
-	homepageTitle = "MAPPERBOI BETA"
+	homepageTitle = "MAPPERIZER BETA"
 	mapIdString   = "id=\"map\""
 )
 

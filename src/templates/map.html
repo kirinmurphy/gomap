@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-  <title>MapperBoi - Website Map Generator</title>
+  <title>Mapperizer :: Website Map Generator</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <link href="/src/templates/dist/output.css" rel="stylesheet">
@@ -17,12 +17,12 @@
 </head>
 <body>
   <div id="map" class="fixed top-0 left-0 right-0 bottom-0"></div>
-  <div class="fixed bg-[rgba(0,0,0,0.6)] left-0 bottom-0 z-30 text-white text-xs font-this px-4 py-2 w-[208px] scale-75 origin-left translate-y-[5px]">
-    <a href="/" target="_blank" rel="noopener noreferrer">
-      <span class="inline-block scale-x-[200%] origin-left text-gray-300">MAPPERBOI</span> 
-      <span< class="inline-block translate-x-[4.65rem] translate-y-[1px] text-orange-400">BETA</span>
-    </a>
-  </div>
+
+  <a href="/" target="_blank" rel="noopener noreferrer"
+    class="fixed bg-[rgba(0,0,0,0.6)] left-0 bottom-0 z-30 text-white text-xs font-thin px-3 py-2 w-[205px] scale-75 origin-left translate-y-[5px]">
+    <span class="inline-block scale-x-[200%] origin-left text-gray-300">MAPPERIZER</span> 
+    <span< class="inline-block translate-x-[4.75rem] text-orange-400 font-bold">BETA</span>
+  </a>
 
   <div hx-get="/getLocations?sheetId={{ .SheetId }}" hx-trigger="load" hx-swap="none"></div>
   <script src="/src/templates/js/mapInit.js"></script>
