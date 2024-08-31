@@ -68,9 +68,4 @@
       sheetUrlInput.dispatchEvent(new Event("paste"));
     });
   }
-
-  bindCopyListener({ 
-    elementId: 'copy-email', 
-    copyMessage: 'Email copied!' 
-  });  
 })()

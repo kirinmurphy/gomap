@@ -87,7 +87,7 @@
           {{ if .Demo }}
             <div id="demoPrompt" class="mt-2 px-6 py-4 bg-[#071e22]">
               <h3 class="font-bold text-md">You are using the demo version.</h3>
-              <div class="mb-2 text-sm">Here's a sample Google Sheet URL to try out the mapper.</div>
+              <div class="mb-2 text-sm">Here's a sample Google Sheet URL to see how it works.</div>
               <div class="mb-3">
                 <button 
                   id="pasteDemoUrl" 
@@ -105,19 +105,16 @@
       </div>
 
       <footer class="flex flex-row justify-end gap-3 items-center text-sm text-gray-400 py-4 px-2 mb-2 lg:py-8">
-        <!-- <a class="hover:text-white" href="https://codethings.net" target="_blank" rel="noopener noreferrer">codethings.net</a> -->
-        <a 
-          id="copy-email" 
-          text-to-copy="codethingsdotnet@gmail.com" 
-          class="flex items-center gap-2 cursor-pointer group hover:text-white">
-
-          <span class="invisible group-hover:visible inline-block text-sm">codethingsdotnet@gmail.com</span>
-          <span class="inline-block text-2xl">&#x2709;</span>
-        </a>
+        <div style="font-size: 14px; font-weight: 300;" >
+          <copy-email-component 
+            email="codethingsdotnet@gmail.com">
+          </copy-email-component>
+        </div>
       </footer>  
     </div>
 
     <script src="/src/templates/js/bindCopyListener.js"></script>
+    <script type="module" src="https://cdn.codethings.net/webcomponents/copy-email-component/index.js"></script>
     <script src="/src/templates/js/homeInit.js"></script>
   </body>
 </html>

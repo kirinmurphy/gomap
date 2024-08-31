@@ -16,7 +16,7 @@ func InitRouter(routerConfig RouterConfig) *mux.Router {
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		homeRouteHandler(w, r, routerConfig)
-	})
+	}).Methods("GET")
 
 	r.HandleFunc("/updateMapUI", func(w http.ResponseWriter, r *http.Request) {
 		updateMapUIHandler(w, r, routerConfig)

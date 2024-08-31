@@ -19,7 +19,6 @@
   
   htmx.on('htmx:afterSettle', function(evt) {
     const locations = JSON.parse(evt.detail.xhr.response);
-    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', locations);
   
     locations.forEach(function(loc) {
       const { name, address, city, state, country, website, phoneNumber } = loc;
