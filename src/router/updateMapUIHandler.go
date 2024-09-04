@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 )
 
+type UpdateMapUITemplateData struct {
+	SheetId string
+	Domain  string
+}
+
 var (
 	errorTemplate   *template.Template
 	successTemplate *template.Template
@@ -31,7 +36,10 @@ func updateMapUIHandler(w http.ResponseWriter, r *http.Request, routerConfig Rou
 		return
 	}
 
-	err = successTemplate.Execute(w, map[string]string{"SheetId": sheetId})
+	err = successTemplate.Execute(w, UpdateMapUITemplateData{
+		SheetId: sheetId,
+		Domain:  r.Host,
+	})
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}

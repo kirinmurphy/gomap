@@ -8,6 +8,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type HomePageTemplateData struct {
+	Demo bool
+}
+
+type MapPageTemplateData struct {
+	SheetId string
+}
+
 var (
 	homepageTemplate *template.Template
 	mapPageTemplate  *template.Template
@@ -19,14 +27,19 @@ func InitializeHomePageTemplates(templateDir string) {
 }
 
 func homeRouteHandler(w http.ResponseWriter, r *http.Request, config RouterConfig) {
-	sheetId := r.URL.Query().Get("sheetId")
+	query := r.URL.Query()
+	sheetId := query.Get("sheetId")
+
+	if sheetId == "" {
+		sheetId = query.Get("sheetID")
+	}
+
 	if sheetId == "" {
 		demoFlag := r.URL.Query().Get("demo")
-		data := map[string]interface{}{
-			"Demo": demoFlag == "true",
-		}
 
-		homepageTemplate.Execute(w, data)
+		homepageTemplate.Execute(w, HomePageTemplateData{
+			Demo: demoFlag == "true",
+		})
 		return
 	}
 
@@ -36,5 +49,7 @@ func homeRouteHandler(w http.ResponseWriter, r *http.Request, config RouterConfi
 		return
 	}
 
-	mapPageTemplate.Execute(w, map[string]string{"SheetId": sheetId})
+	mapPageTemplate.Execute(w, MapPageTemplateData{
+		SheetId: sheetId,
+	})
 }
