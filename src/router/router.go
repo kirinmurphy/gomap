@@ -34,5 +34,9 @@ func InitRouter(routerConfig RouterConfig) *mux.Router {
 		http.StripPrefix("/src/templates/", http.FileServer(http.Dir("src/templates"))),
 	)
 
+	r.PathPrefix("/").Handler(
+		http.StripPrefix("/", http.FileServer(http.Dir("/src/templates"))),
+	)
+
 	return r
 }
